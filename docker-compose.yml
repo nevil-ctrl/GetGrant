@@ -1,0 +1,59 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: getgrant_app
+    restart: unless-stopped
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "8000:8000"
+    environment:
+      # Laravel .env переменные (можно сюда добавить, если хочешь)
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: getgrant_db
+      DB_USERNAME: getgrant_user
+      DB_PASSWORD: secret
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    command: >
+      sh -c "php artisan config:clear && php artisan cache:clear && php artisan serve --host=0.0.0.0 --port=8000"
+
+  postgres:
+    image: postgres:16
+    container_name: getgrant_pg
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: getgrant_db
+      POSTGRES_USER: getgrant_user
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - ./docker/postgres:/var/lib/postgresql/data
+      - ./docker/init/getgrant_db.sql:/docker-entrypoint-initdb.d/getgrant_db.sql
+    ports:
+      - "5433:5432"
+
+  redis:
+    image: redis:alpine
+    container_name: getgrant_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  node:
+    image: node:22
+    container_name: getgrant_node
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    command: ["npm", "run", "dev"]
+    ports:
+      - "5173:5173"
