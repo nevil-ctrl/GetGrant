@@ -15,7 +15,6 @@ services:
     ports:
       - "8000:8000"
     environment:
-      # Laravel .env переменные (можно сюда добавить, если хочешь)
       DB_CONNECTION: pgsql
       DB_HOST: postgres
       DB_PORT: 5432
