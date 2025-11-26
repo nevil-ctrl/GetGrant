@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{{ config('app.name', 'GetGrant,Dachboard') }}</title>
-    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    <title>Dashboard | GetGrant</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+
     @vite('resources/css/app.css')
     @vite('resources/js/app.js')
 </head>
@@ -59,18 +60,18 @@
                 </div>
                 <div class="mt-6 space-y-5">
                     @foreach ([
-                        ['title' => 'Консультация', 'status' => 'done'],
-                        ['title' => 'Подготовка документов', 'status' => 'in-progress'],
-                        ['title' => 'Подача заявки', 'status' => 'todo'],
-                        ['title' => 'Оффер университета', 'status' => 'todo'],
-                        ['title' => 'Виза и вылет', 'status' => 'todo'],
-                    ] as $step)
+    ['title' => 'Консультация', 'status' => 'done'],
+    ['title' => 'Подготовка документов', 'status' => 'in-progress'],
+    ['title' => 'Подача заявки', 'status' => 'todo'],
+    ['title' => 'Оффер университета', 'status' => 'todo'],
+    ['title' => 'Виза и вылет', 'status' => 'todo'],
+] as $step)
                         <div class="flex items-center gap-4">
                             @php($colors = [
-                                'done' => 'bg-green-500',
-                                'in-progress' => 'bg-amber-500',
-                                'todo' => 'bg-slate-300',
-                            ])
+        'done' => 'bg-green-500',
+        'in-progress' => 'bg-amber-500',
+        'todo' => 'bg-slate-300',
+    ])
                             <span class="h-3 w-3 rounded-full {{ $colors[$step['status']] }}"></span>
                             <p class="text-sm font-medium text-slate-800">{{ $step['title'] }}</p>
                             <div class="ml-auto text-xs uppercase tracking-wide text-slate-400">
