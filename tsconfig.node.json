@@ -1,0 +1,9 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "module": "NodeNext",
+        "composite": true,
+        "moduleResolution": "nodenext"
+    },
+    "include": ["vite.config.ts"]
+}
