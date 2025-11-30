@@ -45,10 +45,32 @@ export const AuthProvider: React.FC<Props> = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        // Проверяем, был ли это редирект после выхода
+        const urlParams = new URLSearchParams(window.location.search);
+        const isLogout = urlParams.has('logout');
+        const hasNocache = urlParams.has('nocache');
+
+        // Если есть параметр logout или nocache (старый способ), значит был выход
+        if (isLogout || hasNocache) {
+            // После выхода сразу устанавливаем user как null
+            setUser(null);
+            setLoading(false);
+            // Очищаем параметры из URL
+            window.history.replaceState({}, '', '/');
+            return;
+        }
+
         // ВСЕГДА получаем пользователя через API, игнорируем window.user
         authHttp
             .get("/api/user")
-            .then((res) => setUser(res.data))
+            .then((res) => {
+                // Проверяем, что ответ не пустой (может быть null или пустой объект)
+                if (res.data && Object.keys(res.data).length > 0) {
+                    setUser(res.data);
+                } else {
+                    setUser(null);
+                }
+            })
             .catch(() => setUser(null))
             .finally(() => setLoading(false));
     }, []);
