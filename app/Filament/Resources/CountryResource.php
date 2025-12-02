@@ -3,13 +3,18 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\CountryResource\Pages;
-use App\Filament\Resources\CountryResource\RelationManagers;
 use App\Models\Country;
+use Filament\Resources\Resource;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Resources\Resource;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\Repeater;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\BooleanColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
@@ -23,7 +28,35 @@ class CountryResource extends Resource
     {
         return $form
             ->schema([
-                //
+                TextInput::make('name')
+                    ->required()
+                    ->label('Название страны'),
+
+                TextInput::make('code')
+                    ->required()
+                    ->label('ISO код'),
+
+                TextInput::make('flag')
+                    ->label('Флаг (URL)')
+                    ->nullable(),
+
+                Textarea::make('description')
+                    ->label('Описание')
+                    ->nullable(),
+
+                Repeater::make('selling_points')
+                    ->label('Преимущества')
+                    ->schema([
+                        TextInput::make('value')
+                            ->label('Преимущество')
+                            ->required(),
+                    ])
+                    ->columns(1)
+                    ->nullable(),
+
+                Toggle::make('is_active')
+                    ->label('Активна')
+                    ->default(true),
             ]);
     }
 
@@ -31,7 +64,10 @@ class CountryResource extends Resource
     {
         return $table
             ->columns([
-                //
+                TextColumn::make('name')->label('Название')->sortable()->searchable(),
+                TextColumn::make('code')->label('ISO код')->sortable()->searchable(),
+                BooleanColumn::make('is_active')->label('Активна'),
+                TextColumn::make('created_at')->label('Создано')->dateTime(),
             ])
             ->filters([
                 //

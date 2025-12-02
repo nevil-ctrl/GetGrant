@@ -7,6 +7,21 @@ use Illuminate\Database\Eloquent\Model;
 
 class Country extends Model
 {
-    /** @use HasFactory<\Database\Factories\CountryFactory> */
     use HasFactory;
+
+    // Разрешенные для массового присваивания поля
+    protected $fillable = [
+        'name',
+        'code',
+        'flag',
+        'description',
+        'is_active',
+        'selling_points', // если храните как JSON
+    ];
+
+    // Если selling_points хранится как JSON
+    protected $casts = [
+        'is_active' => 'boolean',
+        'selling_points' => 'array',
+    ];
 }
