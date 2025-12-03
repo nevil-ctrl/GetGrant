@@ -24,4 +24,8 @@ class Country extends Model
         'is_active' => 'boolean',
         'selling_points' => 'array',
     ];
+
+    public function universities() {
+    return $this->hasMany(University::class);
+}
 }

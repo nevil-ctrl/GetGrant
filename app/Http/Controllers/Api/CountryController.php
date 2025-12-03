@@ -3,47 +3,98 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Country;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CountryController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Список стран.
+     * GET /api/countries
      */
-    public function index()
+    public function index(Request $request): JsonResponse
     {
-        //
+        $query = Country::query()->where('is_active', true);
+
+        if ($search = $request->get('search')) {
+            $query->where('name', 'like', '%' . $search . '%');
+        }
+
+        $countries = $query->paginate(20);
+
+        return response()->json($countries);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Создание страны.
+     * POST /api/countries
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
-        //
+        $data = $request->validate([
+            'name'            => ['required', 'string', 'max:255'],
+            'code'            => ['required', 'string', 'max:3', 'unique:countries,code'],
+            'flag'            => ['nullable', 'string', 'max:255'],
+            'description'     => ['nullable', 'string'],
+            'is_active'       => ['sometimes', 'boolean'],
+            'selling_points'  => ['nullable', 'array'],
+            'selling_points.*'=> ['string'],
+        ]);
+
+        $country = Country::create($data);
+
+        return response()->json($country, 201);
     }
 
     /**
-     * Display the specified resource.
+     * Детальная информация о стране.
+     * GET /api/countries/{id}
      */
-    public function show(string $id)
+    public function show(int $id): JsonResponse
     {
-        //
+        $country = Country::with([
+            'universities' => function ($query) {
+                $query->where('is_active', true);
+            },
+        ])->findOrFail($id);
+
+        return response()->json($country);
     }
 
     /**
-     * Update the specified resource in storage.
+     * Обновление страны.
+     * PUT/PATCH /api/countries/{id}
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, int $id): JsonResponse
     {
-        //
+        $country = Country::findOrFail($id);
+
+        $data = $request->validate([
+            'name'            => ['sometimes', 'string', 'max:255'],
+            'code'            => ['sometimes', 'string', 'max:3', 'unique:countries,code,' . $country->id],
+            'flag'            => ['nullable', 'string', 'max:255'],
+            'description'     => ['nullable', 'string'],
+            'is_active'       => ['sometimes', 'boolean'],
+            'selling_points'  => ['nullable', 'array'],
+            'selling_points.*'=> ['string'],
+        ]);
+
+        $country->update($data);
+
+        return response()->json($country);
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Удаление страны.
+     * DELETE /api/countries/{id}
      */
-    public function destroy(string $id)
+    public function destroy(int $id): JsonResponse
     {
-        //
+        $country = Country::findOrFail($id);
+        $country->delete();
+
+        return response()->json(['message' => 'Country deleted successfully']);
     }
 }
+?>

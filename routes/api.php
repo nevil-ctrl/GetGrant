@@ -1,9 +1,9 @@
 <?php
-use App\Http\Controllers\Api\CountryController;
-use App\Http\Controllers\Api\UniversityController;
-use App\Http\Controllers\Api\ProgramController;
 
-Route::apiResource('countries', CountryController::class);
-Route::apiResource('universities', UniversityController::class);
-Route::apiResource('programs', ProgramController::class);
-?>
+use App\Http\Controllers\Api\CountryController;
+use Illuminate\Support\Facades\Route;
+
+Route::middleware('api')->group(function () {
+    Route::get('/countries', [CountryController::class, 'index']);
+    Route::get('/countries/{id}', [CountryController::class, 'show']);
+});

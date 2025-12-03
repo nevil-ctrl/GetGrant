@@ -1,27 +1,33 @@
 <?php
 
-namespace App\Models;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+return new class extends Migration {
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('programs', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->unsignedBigInteger('university_id');
+            $table->text('description')->nullable();
+            $table->string('field_of_study');
+            $table->boolean('is_top')->default(false);
+            $table->json('career_info')->nullable();
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
 
-class Program extends Model
-{
-    use HasFactory;
+            $table->foreign('university_id')->references('id')->on('universities')->cascadeOnDelete();
+        });
+    }
 
-    protected $fillable = [
-        'name',
-        'university_id',
-        'description',
-        'field_of_study',
-        'is_top',
-        'career_info',
-        'is_active',
-    ];
+    public function down(): void
+    {
+        Schema::dropIfExists('programs');
+    }
 
-    protected $casts = [
-        'is_top' => 'boolean',
-        'is_active' => 'boolean',
-        'career_info' => 'array', // для JSON поля
-    ];
-}
+};

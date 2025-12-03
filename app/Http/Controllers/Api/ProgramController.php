@@ -3,47 +3,104 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Program;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ProgramController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Список программ.
+     * GET /api/programs
      */
-    public function index()
+    public function index(Request $request): JsonResponse
     {
-        //
+        $query = Program::query()->where('is_active', true);
+
+        if ($universityId = $request->get('university_id')) {
+            $query->where('university_id', $universityId);
+        }
+
+        if ($countryId = $request->get('country_id')) {
+            $query->whereHas('university.country', function ($q) use ($countryId) {
+                $q->where('id', $countryId);
+            });
+        }
+
+        if ($field = $request->get('field_of_study')) {
+            $query->where('field_of_study', $field);
+        }
+
+        $programs = $query->paginate(20);
+
+        return response()->json($programs);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Создание программы.
+     * POST /api/programs
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
-        //
+        $data = $request->validate([
+            'name'           => ['required', 'string', 'max:255'],
+            'university_id'  => ['required', 'integer', 'exists:universities,id'],
+            'description'    => ['nullable', 'string'],
+            'field_of_study' => ['nullable', 'string', 'max:255'],
+            'is_top'         => ['sometimes', 'boolean'],
+            'career_info'    => ['nullable'], // можно уточнить формат (array/json)
+            'is_active'      => ['sometimes', 'boolean'],
+        ]);
+
+        $program = Program::create($data);
+
+        return response()->json($program, 201);
     }
 
     /**
-     * Display the specified resource.
+     * Детальная информация о программе.
+     * GET /api/programs/{id}
      */
-    public function show(string $id)
+    public function show(int $id): JsonResponse
     {
-        //
+        $program = Program::with(['university.country'])->findOrFail($id);
+
+        return response()->json($program);
     }
 
     /**
-     * Update the specified resource in storage.
+     * Обновление программы.
+     * PUT/PATCH /api/programs/{id}
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, int $id): JsonResponse
     {
-        //
+        $program = Program::findOrFail($id);
+
+        $data = $request->validate([
+            'name'           => ['sometimes', 'string', 'max:255'],
+            'university_id'  => ['sometimes', 'integer', 'exists:universities,id'],
+            'description'    => ['nullable', 'string'],
+            'field_of_study' => ['nullable', 'string', 'max:255'],
+            'is_top'         => ['sometimes', 'boolean'],
+            'career_info'    => ['nullable'],
+            'is_active'      => ['sometimes', 'boolean'],
+        ]);
+
+        $program->update($data);
+
+        return response()->json($program);
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Удаление программы.
+     * DELETE /api/programs/{id}
      */
-    public function destroy(string $id)
+    public function destroy(int $id): JsonResponse
     {
-        //
+        $program = Program::findOrFail($id);
+        $program->delete();
+
+        return response()->json(['message' => 'Program deleted successfully']);
     }
 }
+?>
