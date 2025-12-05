@@ -89,14 +89,18 @@ export const Header: React.FC = () => {
                             <GetGrantButton
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => navigate("/login")}
+                                onClick={() =>
+                                    (window.location.href = "/auth/login")
+                                }
                             >
                                 Вход
                             </GetGrantButton>
                             <GetGrantButton
                                 variant="primary"
                                 size="sm"
-                                onClick={() => navigate("/register")}
+                                onClick={() =>
+                                    (window.location.href = "/auth/register")
+                                }
                             >
                                 Регистрация
                             </GetGrantButton>

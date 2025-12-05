@@ -14,7 +14,7 @@
         <h1 class="text-2xl font-bold text-slate-900">Создайте новый пароль</h1>
     </div>
 
-    <form method="POST" action="{{ route('password.store') }}" class="space-y-4">
+    <form method="POST" action="{{ route('password.update') }}" class="space-y-4">
         @csrf
         <input type="hidden" name="token" value="{{ $request->route('token') }}">
 

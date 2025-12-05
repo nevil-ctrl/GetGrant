@@ -9,12 +9,15 @@ use App\Actions\Fortify\UpdateUserProfileInformation;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
-use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
-use Laravel\Fortify\Contracts\LogoutResponse;
 use Laravel\Fortify\Fortify;
+use Laravel\Fortify\Contracts\LogoutResponse;
+use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
+use Illuminate\Support\Facades\Event;
+use Laravel\Fortify\Events\Authenticated;
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -26,14 +29,10 @@ class FortifyServiceProvider extends ServiceProvider
         $this->app->instance(LogoutResponse::class, new class implements LogoutResponse {
             public function toResponse($request)
             {
-                // Полностью очищаем сессию перед редиректом
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
-                
-                // Убеждаемся, что пользователь разлогинен
                 Auth::logout();
-                
-                // Редирект на главную с параметром logout
+
                 return redirect('/?logout=' . time());
             }
         });
@@ -44,26 +43,56 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Fortify::loginView(fn () => view('auth.login'));
-        Fortify::registerView(fn () => view('auth.register'));
-        Fortify::requestPasswordResetLinkView(fn () => view('auth.forgot-password'));
-        Fortify::resetPasswordView(fn ($request) => view('auth.reset-password', ['request' => $request]));
-        Fortify::verifyEmailView(fn () => view('auth.verify-email'));
+        // Views
+        Fortify::loginView(fn() => view('auth.login'));
+        Fortify::registerView(fn() => view('auth.register'));
+        Fortify::requestPasswordResetLinkView(fn() => view('auth.forgot-password'));
+        Fortify::resetPasswordView(fn($request) => view('auth.reset-password', ['request' => $request]));
+        Fortify::verifyEmailView(fn() => view('auth.verify-email'));
 
+        // Actions
         Fortify::createUsersUsing(CreateNewUser::class);
         Fortify::updateUserProfileInformationUsing(UpdateUserProfileInformation::class);
         Fortify::updateUserPasswordsUsing(UpdateUserPassword::class);
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
         Fortify::redirectUserForTwoFactorAuthenticationUsing(RedirectIfTwoFactorAuthenticatable::class);
 
-        RateLimiter::for('login', function (Request $request) {
-            $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());
+        // Кастомная аутентификация
+        Fortify::authenticateUsing(function (Request $request) {
+            $user = \App\Models\User::where('email', $request->email)->first();
 
+            if ($user && Hash::check($request->password, $user->password)) {
+                Auth::login($user);
+                return $user;
+            }
+
+            return null;
+        });
+
+        // Rate limiting
+        RateLimiter::for('login', function (Request $request) {
+            $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())) . '|' . $request->ip());
             return Limit::perMinute(5)->by($throttleKey);
         });
 
         RateLimiter::for('two-factor', function (Request $request) {
             return Limit::perMinute(5)->by($request->session()->get('login.id'));
         });
+
+        // Редирект по роли после логина через событие
+        Event::listen(Authenticated::class, function ($event) {
+            $user = $event->user;
+
+            $route = match ($user->profile_type) {
+                'student' => '/student-dashboard',
+                'parent' => '/parent-dashboard',
+                'manager' => '/manager-dashboard',
+                'admin' => '/admin-dashboard',
+                default => '/dashboard',
+            };
+
+            session()->put('url.intended', $route);
+        });
+
     }
 }

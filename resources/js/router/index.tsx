@@ -20,8 +20,8 @@ export default function Router() {
                 <Route path="/countries" element={<CountriesPage />} />
                 <Route path="/programs" element={<ProgramsPage />} />
                 <Route path="/universities" element={<UniversitiesPage />} />
-                <Route path="/login" element={<LoginForms />} />
-                <Route path="/register" element={<RegisterForms />} />
+                {/* <Route path="/login" element={<LoginForms />} /> */}
+                {/* <Route path="/register" element={<RegisterForms />} /> */}
             </Routes>
         </BrowserRouter>
     );

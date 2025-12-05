@@ -21,6 +21,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'profile_type',
+        'role', // если используешь role отдельно
+        'phone', // если сохраняешь телефон
     ];
 
     /**
