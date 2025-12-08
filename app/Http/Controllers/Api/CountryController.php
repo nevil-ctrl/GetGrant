@@ -3,61 +3,67 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Country;
+use App\Models\Country; // Используем предоставленную модель
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule; // Для уникальности при обновлении
 
 class CountryController extends Controller
 {
     /**
-     * Список стран.
+     * 🗺️ Получение списка стран (Для фильтров).
      * GET /api/countries
+     *
+     * @return JsonResponse
      */
-    public function index(Request $request): JsonResponse
+    public function index(): JsonResponse
     {
-        $query = Country::query()->where('is_active', true);
+        // Выбираем только активные страны, сортируем и возвращаем только ID и NAME.
+        $countries = Country::where('is_active', true)
+            ->orderBy('name')
+            // Ограничиваем поля для оптимизации и соответствия требованиям фильтра на фронте
+            ->get(['id', 'name', 'flag']);
 
-        if ($search = $request->get('search')) {
-            $query->where('name', 'like', '%' . $search . '%');
-        }
-
-        $countries = $query->paginate(20);
-
+        // Возвращает чистый JSON-массив
         return response()->json($countries);
     }
 
+    // --- Методы CRUD (если они нужны для админки) ---
+
     /**
-     * Создание страны.
+     * Создание новой страны.
      * POST /api/countries
+     *
+     * @param Request $request
+     * @return JsonResponse
      */
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'name'            => ['required', 'string', 'max:255'],
-            'code'            => ['required', 'string', 'max:3', 'unique:countries,code'],
-            'flag'            => ['nullable', 'string', 'max:255'],
-            'description'     => ['nullable', 'string'],
-            'is_active'       => ['sometimes', 'boolean'],
-            'selling_points'  => ['nullable', 'array'],
-            'selling_points.*'=> ['string'],
+            'name'           => ['required', 'string', 'max:255', 'unique:countries,name'],
+            'code'           => ['required', 'string', 'max:10', 'unique:countries,code'],
+            'flag'           => ['nullable', 'string', 'max:255'],
+            'description'    => ['nullable', 'string'],
+            'is_active'      => ['sometimes', 'boolean'],
+            'selling_points' => ['nullable'], // Проверить формат, если JSON
         ]);
 
         $country = Country::create($data);
 
-        return response()->json($country, 201);
+        return response()->json($country, 201); // 201 Created
     }
 
     /**
-     * Детальная информация о стране.
+     * Отображение одной страны.
      * GET /api/countries/{id}
+     *
+     * @param int $id
+     * @return JsonResponse
      */
     public function show(int $id): JsonResponse
     {
-        $country = Country::with([
-            'universities' => function ($query) {
-                $query->where('is_active', true);
-            },
-        ])->findOrFail($id);
+        // Автоматически вернет 404, если не найдено
+        $country = Country::findOrFail($id);
 
         return response()->json($country);
     }
@@ -65,19 +71,23 @@ class CountryController extends Controller
     /**
      * Обновление страны.
      * PUT/PATCH /api/countries/{id}
+     *
+     * @param Request $request
+     * @param int $id
+     * @return JsonResponse
      */
     public function update(Request $request, int $id): JsonResponse
     {
         $country = Country::findOrFail($id);
 
         $data = $request->validate([
-            'name'            => ['sometimes', 'string', 'max:255'],
-            'code'            => ['sometimes', 'string', 'max:3', 'unique:countries,code,' . $country->id],
-            'flag'            => ['nullable', 'string', 'max:255'],
-            'description'     => ['nullable', 'string'],
-            'is_active'       => ['sometimes', 'boolean'],
-            'selling_points'  => ['nullable', 'array'],
-            'selling_points.*'=> ['string'],
+            // Rule::unique для уникальности, игнорируя текущий ID
+            'name'           => ['sometimes', 'string', 'max:255', Rule::unique('countries')->ignore($id)],
+            'code'           => ['sometimes', 'string', 'max:10', Rule::unique('countries')->ignore($id)],
+            'flag'           => ['nullable', 'string', 'max:255'],
+            'description'    => ['nullable', 'string'],
+            'is_active'      => ['sometimes', 'boolean'],
+            'selling_points' => ['nullable'],
         ]);
 
         $country->update($data);
@@ -88,6 +98,9 @@ class CountryController extends Controller
     /**
      * Удаление страны.
      * DELETE /api/countries/{id}
+     *
+     * @param int $id
+     * @return JsonResponse
      */
     public function destroy(int $id): JsonResponse
     {
@@ -97,4 +110,3 @@ class CountryController extends Controller
         return response()->json(['message' => 'Country deleted successfully']);
     }
 }
-?>

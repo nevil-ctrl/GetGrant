@@ -109,4 +109,3 @@ class UniversityController extends Controller
         return response()->json(['message' => 'University deleted successfully']);
     }
 }
-?>
