@@ -2,13 +2,22 @@
 export default {
     content: [
         "./resources/**/*.js",
-        "./resources/**/*.jsx",
         "./resources/**/*.ts",
+        "./resources/**/*.jsx",
         "./resources/**/*.tsx",
         "./resources/**/*.blade.php",
     ],
     theme: {
-        extend: {},
+        extend: {
+            colors: {
+                background: "var(--background)",
+                foreground: "var(--foreground)",
+                primary: "var(--primary)",
+                secondary: "var(--secondary)",
+                border: "var(--border)",
+                ring: "var(--ring)",
+            },
+        },
     },
     plugins: [],
 };

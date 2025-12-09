@@ -3,7 +3,7 @@ import {
     AuthContext,
     LoginCredentials,
     RegisterData,
-} from "../context/AuthContext";
+} from "@/context/AuthContext";
 import axios from "axios";
 
 interface Props {

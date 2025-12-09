@@ -1,48 +1,46 @@
-import React from "react";
-import { cn } from "../lib/utils";
+import React from 'react';
+import { Button } from './ui/button';
+import { cn } from '../lib/utils';
 
-interface GetGrantButtonProps
-    extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: "primary" | "ghost" | "outline";
-    size?: "sm" | "md" | "lg";
+interface GetGrantButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+  children: React.ReactNode;
 }
 
-const GetGrantButton = React.forwardRef<HTMLButtonElement, GetGrantButtonProps>(
-    (
-        { variant = "primary", size = "md", className, children, ...props },
-        ref
-    ) => {
-        const baseStyles = "px-4 py-2 rounded font-medium transition-colors";
+export function GetGrantButton({ 
+  variant = 'primary', 
+  size = 'md', 
+  className,
+  children,
+  ...props 
+}: GetGrantButtonProps) {
+  const baseStyles = 'font-medium transition-all duration-200 rounded-lg min-h-[44px] min-w-[44px]';
+  
+  const variants = {
+    primary: 'bg-[#1055b2] text-white hover:bg-[#003b8a] active:bg-[#00306f] shadow-sm hover:shadow-md',
+    secondary: 'bg-[#1A1A1A] text-white hover:bg-[#2a2a2a] active:bg-[#0a0a0a]',
+    outline: 'border-2 border-[#1A1A1A] text-[#1A1A1A] hover:bg-[#F5F5F5] active:bg-[#e5e5e5]',
+    ghost: 'text-[#1A1A1A] hover:bg-[#F5F5F5] active:bg-[#e5e5e5]'
+  };
 
-        const variants: Record<string, string> = {
-            primary: "bg-blue-500 text-white hover:bg-blue-600",
-            ghost: "bg-transparent text-gray-700 border border-gray-300 hover:bg-gray-100",
-            outline: "bg-white text-black border border-black hover:bg-gray-50",
-        };
+  const sizes = {
+    sm: 'px-4 py-2 text-sm',
+    md: 'px-6 py-3 text-base',
+    lg: 'px-8 py-4 text-lg'
+  };
 
-        const sizes: Record<string, string> = {
-            sm: "text-sm px-3 py-1",
-            md: "text-base px-4 py-2",
-            lg: "text-lg px-5 py-3",
-        };
-
-        return (
-            <button
-                ref={ref}
-                className={cn(
-                    baseStyles,
-                    variants[variant],
-                    sizes[size],
-                    className
-                )}
-                {...props}
-            >
-                {children}
-            </button>
-        );
-    }
-);
-
-GetGrantButton.displayName = "GetGrantButton";
-
-export { GetGrantButton };
+  return (
+    <button
+      className={cn(
+        baseStyles,
+        variants[variant],
+        sizes[size],
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+}

@@ -1,6 +1,10 @@
 import { defineConfig } from "vite";
 import laravel from "laravel-vite-plugin";
 import react from "@vitejs/plugin-react";
+import path from "path";
+
+const devHost = process.env.VITE_DEV_HOST ?? "localhost";
+const devPort = Number(process.env.VITE_DEV_PORT ?? 5173);
 
 export default defineConfig({
     plugins: [
@@ -10,12 +14,17 @@ export default defineConfig({
         }),
         react(),
     ],
+    resolve: {
+        alias: {
+            "@": path.resolve(__dirname, "./resources/js"),
+        },
+    },
     server: {
-        host: "127.0.0.1",
-        port: 5173,
+        host: devHost,
+        port: devPort,
         hmr: {
-            host: "127.0.0.1",
-            port: 5173,
+            host: devHost,
+            port: devPort,
         },
     },
 });

@@ -18,10 +18,19 @@
 /public/storage
 /storage/*.key
 /storage/pail
+
+# Laravel cache & logs
+/storage/logs/*
+/storage/framework/cache/data/*
+/storage/framework/views/*
+/storage/framework/sessions/*
+/storage/framework/testing/*
+
 /vendor
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
 # Docker / PostgreSQL
 docker/postgres/*
 !docker/postgres/.gitkeep
