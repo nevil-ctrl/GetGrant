@@ -2,34 +2,37 @@ import React from "react";
 import Router from "./router";
 import { useAuth } from "./auth/useAuth";
 import { LoginPageSkeleton, DashboardSkeleton } from "@/components/ui/skeleton-loading";
+import { ScrollToTopButton } from "@/components/ScrollToTopButton";
 
 export default function App() {
     const { loading } = useAuth();
     
-    // Показываем Skeleton при начальной загрузке
     if (loading) {
         const path = window.location.pathname;
-        // Если на странице входа/регистрации, показываем LoginPageSkeleton
         if (path.includes('/auth/login') || path.includes('/auth/register')) {
             return <LoginPageSkeleton />;
         }
-        // Если на дашборде, показываем DashboardSkeleton
         if (path.includes('/dashboard')) {
             return <DashboardSkeleton />;
         }
-        // Иначе показываем простой скелетон
         return (
-            <div className="min-h-screen bg-white">
-                <div className="animate-pulse">
-                    <div className="h-20 bg-gray-200"></div>
-                    <div className="container mx-auto p-6 space-y-4">
-                        <div className="h-8 bg-gray-200 w-1/3"></div>
-                        <div className="h-64 bg-gray-200"></div>
+            <div className="min-h-screen bg-white flex items-center justify-center px-6">
+                <div className="w-full max-w-4xl space-y-6">
+                    <div className="h-12 bg-gray-200 rounded-2xl animate-pulse" />
+                    <div className="bg-gray-100 rounded-3xl p-6 md:p-10 shadow-sm animate-pulse space-y-4">
+                        <div className="h-8 bg-gray-200 rounded-xl w-2/3" />
+                        <div className="h-6 bg-gray-200 rounded-xl w-1/2" />
+                        <div className="h-48 bg-gray-200 rounded-2xl" />
                     </div>
                 </div>
             </div>
         );
     }
     
-    return <Router />;
+    return (
+        <>
+            <Router />
+            <ScrollToTopButton />
+        </>
+    );
 }

@@ -15,6 +15,7 @@ export function ProgramCatalogPage({ onNavigate, onCloseSideNav }: ProgramCatalo
   const [showFilters, setShowFilters] = useState(false);
   const [selectedField, setSelectedField] = useState<string[]>([]);
   const [selectedLevel, setSelectedLevel] = useState<string[]>([]);
+  const [search, setSearch] = useState("");
 
   const programs = [
     {
@@ -94,6 +95,19 @@ export function ProgramCatalogPage({ onNavigate, onCloseSideNav }: ProgramCatalo
   const fields = ['Технологии', 'Бизнес', 'Медицина', 'Инженерия', 'Искусство', 'Науки'];
   const levels = ['Bachelor', 'Master', 'PhD', 'Pre-Med'];
 
+  const filtered = programs.filter((p) => {
+    const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase().trim());
+    const matchesField = selectedField.length === 0 || selectedField.includes(p.field);
+    const matchesLevel = selectedLevel.length === 0 || selectedLevel.includes(p.level);
+    return matchesSearch && matchesField && matchesLevel;
+  });
+
+  const resetFilters = () => {
+    setSelectedField([]);
+    setSelectedLevel([]);
+    setSearch("");
+  };
+
   const FilterSidebar = () => (
     <div className="space-y-6">
       <div>
@@ -106,6 +120,8 @@ export function ProgramCatalogPage({ onNavigate, onCloseSideNav }: ProgramCatalo
             type="text"
             placeholder="Название программы..."
             className="w-full pl-10 pr-4 py-3 bg-[#F5F5F5] border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1055b2]"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
           />
         </div>
       </div>
@@ -160,7 +176,7 @@ export function ProgramCatalogPage({ onNavigate, onCloseSideNav }: ProgramCatalo
         </div>
       </div>
 
-      <GetGrantButton variant="outline" size="sm" className="w-full">
+      <GetGrantButton variant="outline" size="sm" className="w-full" onClick={resetFilters}>
         Сбросить фильтры
       </GetGrantButton>
     </div>
@@ -174,7 +190,7 @@ export function ProgramCatalogPage({ onNavigate, onCloseSideNav }: ProgramCatalo
             Каталог программ
           </h1>
           <p className="text-[#6D7A89]">
-            Найдено {programs.length} программ обучения
+            Найдено {filtered.length} программ обучения
           </p>
         </div>
 
@@ -215,7 +231,7 @@ export function ProgramCatalogPage({ onNavigate, onCloseSideNav }: ProgramCatalo
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
-              {programs.map((program, index) => (
+              {filtered.map((program, index) => (
                 <motion.div
                   key={program.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -287,17 +303,17 @@ export function ProgramCatalogPage({ onNavigate, onCloseSideNav }: ProgramCatalo
                     </GetGrantCardContent>
 
                     <GetGrantCardFooter>
-                        <GetGrantButton
-                          variant="ghost"
-                          size="sm"
-                          className="w-full"
-                          onClick={() => {
-                            onNavigate?.('program-detail');
-                            onCloseSideNav?.();
-                          }}
-                        >
-                          Подробнее о программе
-                        </GetGrantButton>
+                    <GetGrantButton
+                      variant="ghost"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => {
+                        onNavigate?.(`/programs/${program.id}`);
+                        onCloseSideNav?.();
+                      }}
+                    >
+                      Подробнее о программе
+                    </GetGrantButton>
                     </GetGrantCardFooter>
                   </GetGrantCard>
                 </motion.div>

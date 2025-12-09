@@ -1,21 +1,25 @@
 import React from 'react';
 import { Mail, Phone, MapPin, Facebook, Instagram, Linkedin, Youtube } from 'lucide-react';
 
-export function Footer() {
+interface FooterProps {
+  onNavigate?: (path: string) => void;
+}
+
+export function Footer({ onNavigate }: FooterProps) {
   const footerSections = [
     {
       title: 'Образование',
       links: [
-        { name: 'Университеты', href: '#universities' },
-        { name: 'Страны', href: '#countries' },
-        { name: 'Программы', href: '#programs' },
-        { name: 'Онлайн-подготовка', href: '#courses' }
+        { name: 'Университеты', href: '/universities' },
+        { name: 'Страны', href: '/countries' },
+        { name: 'Программы', href: '/programs' },
+        { name: 'Онлайн-подготовка', href: '/courses' }
       ]
     },
     {
       title: 'Компания',
       links: [
-        { name: 'О нас', href: '#about' },
+        { name: 'О нас', href: '/' },
         { name: 'Наша команда', href: '#team' },
         { name: 'Отзывы', href: '#reviews' },
         { name: 'Партнёры', href: '#partners' }
@@ -79,12 +83,12 @@ export function Footer() {
               <ul className="space-y-2">
                 {section.links.map((link) => (
                   <li key={link.name}>
-                    <a
-                      href={link.href}
-                      className="text-[#6D7A89] hover:text-[#1055b2] transition-colors"
+                    <button
+                      onClick={() => onNavigate?.(link.href)}
+                      className="text-left text-[#6D7A89] hover:text-[#1055b2] transition-colors"
                     >
                       {link.name}
-                    </a>
+                    </button>
                   </li>
                 ))}
               </ul>

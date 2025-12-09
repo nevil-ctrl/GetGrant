@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Menu, X, ChevronDown, User } from 'lucide-react';
+import React from 'react';
+import { ChevronDown, User } from 'lucide-react';
 import { GetGrantButton } from './GetGrantButton';
 import { cn } from '@/lib/utils';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 
 
@@ -10,20 +10,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface HeaderProps {
   isAuthenticated?: boolean;
   onNavigate?: (page: string) => void;
-  onToggleSideNav?: () => void;
-  onCloseSideNav?: () => void;
 }
 
-export function Header({ isAuthenticated = false, onNavigate, onToggleSideNav, onCloseSideNav }: HeaderProps) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [servicesOpen, setServicesOpen] = useState(false);
-
+export function Header({ isAuthenticated = false, onNavigate }: HeaderProps) {
   const navigation = [
-    { name: 'Университеты', href: '#universities', page: 'universities' },
-    { name: 'Страны', href: '#countries', page: 'countries' },
-    { name: 'Программы', href: '#programs', page: 'programs' },
-    { name: 'Онлайн-подготовка', href: '#courses', page: 'courses' },
-    { name: 'О нас', href: '#about', page: 'home' }
+    { name: 'Университеты', path: '/universities' },
+    { name: 'Страны', path: '/countries' },
+    { name: 'Программы', path: '/programs' },
+    { name: 'Онлайн-подготовка', path: '/courses' },
+    { name: 'О нас', path: '/' }
   ];
 
   return (
@@ -33,8 +28,7 @@ export function Header({ isAuthenticated = false, onNavigate, onToggleSideNav, o
           {/* Logo (click -> home) */}
           <button
             onClick={() => {
-              onNavigate?.('home');
-              onCloseSideNav?.();
+              onNavigate?.('/');
             }}
             className="flex items-center gap-2 focus:outline-none"
             aria-label="Перейти на главную"
@@ -48,40 +42,24 @@ export function Header({ isAuthenticated = false, onNavigate, onToggleSideNav, o
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-8">
             {navigation.map((item) => (
-              <a
+              <button
                 key={item.name}
-                href={item.href}
-                onClick={(e) => {
-                  e.preventDefault();
-                  // prefer SPA navigation if handler provided
-                  onNavigate?.(item.page);
-                }}
+                onClick={() => onNavigate?.(item.path)}
                 className="text-[#1A1A1A] hover:text-[#6D7A89] transition-colors font-medium cursor-pointer"
               >
                 {item.name}
-              </a>
+              </button>
             ))}
           </nav>
-
-          {/* Desktop side-nav toggle (hamburger) */}
-          <div className="hidden lg:flex items-center ml-4">
-            <button
-              aria-label="Открыть боковую навигацию"
-              onClick={() => onToggleSideNav?.()}
-              className="p-2 hover:bg-[#F5F5F5] rounded-lg transition-colors"
-            >
-              <Menu className="w-5 h-5 text-[#1A1A1A]" />
-            </button>
-          </div>
 
           {/* Desktop CTA */}
           <div className="hidden lg:flex items-center gap-4">
             {!isAuthenticated ? (
               <>
-                <GetGrantButton variant="ghost" size="sm" onClick={() => onNavigate?.('login')}>
+                <GetGrantButton variant="ghost" size="sm" onClick={() => onNavigate?.('/auth/login')}>
                   Войти
                 </GetGrantButton>
-                <GetGrantButton variant="primary" size="sm" onClick={() => onNavigate?.('register')}>
+                <GetGrantButton variant="primary" size="sm" onClick={() => onNavigate?.('/auth/register')}>
                   Получить консультацию
                 </GetGrantButton>
               </>
@@ -95,66 +73,17 @@ export function Header({ isAuthenticated = false, onNavigate, onToggleSideNav, o
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="lg:hidden p-2 hover:bg-[#F5F5F5] rounded-lg transition-colors"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? (
-              <X className="w-6 h-6 text-[#1A1A1A]" />
-            ) : (
-              <Menu className="w-6 h-6 text-[#1A1A1A]" />
-            )}
-          </button>
+          {/* Mobile CTA simplified (без гамбургера) */}
+          <div className="lg:hidden flex items-center gap-2">
+            <GetGrantButton variant="ghost" size="sm" onClick={() => onNavigate?.('/auth/login')}>
+              Войти
+            </GetGrantButton>
+            <GetGrantButton variant="primary" size="sm" onClick={() => onNavigate?.('/auth/register')}>
+              Консультация
+            </GetGrantButton>
+          </div>
         </div>
       </div>
-
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden border-t border-[#1A1A1A]/10 bg-white"
-          >
-            <div className="container-custom py-4">
-              <nav className="flex flex-col gap-2">
-                {navigation.map((item) => (
-                  <a
-                    key={item.name}
-                    href={item.href}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setMobileMenuOpen(false);
-                      onNavigate?.(item.page);
-                    }}
-                    className="px-4 py-3 text-[#1A1A1A] hover:bg-[#F5F5F5] rounded-lg transition-colors font-medium cursor-pointer"
-                  >
-                    {item.name}
-                  </a>
-                ))}
-              </nav>
-              <div className="mt-4 flex flex-col gap-2">
-                {!isAuthenticated ? (
-                  <>
-                    <GetGrantButton variant="outline" size="md" className="w-full" onClick={() => { setMobileMenuOpen(false); onNavigate?.('login'); }}>
-                      Войти
-                    </GetGrantButton>
-                    <GetGrantButton variant="primary" size="md" className="w-full" onClick={() => { setMobileMenuOpen(false); onNavigate?.('register'); }}>
-                      Получить консультацию
-                    </GetGrantButton>
-                  </>
-                ) : (
-                  <GetGrantButton variant="outline" size="md" className="w-full">
-                    Личный кабинет
-                  </GetGrantButton>
-                )}
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </header>
   );
 }

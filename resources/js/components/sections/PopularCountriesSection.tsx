@@ -126,8 +126,11 @@ export function PopularCountriesSection({ onNavigate, onCloseSideNav }: PopularC
             >
               <GetGrantCard
                 hoverable
-                className="h-full"
-                onClick={() => { onNavigate?.('country-detail'); onCloseSideNav?.(); }}
+                className="h-full cursor-pointer"
+                onClick={() => { 
+                  onNavigate?.(`/countries/${country.id}`); 
+                  onCloseSideNav?.(); 
+                }}
               >
                 <div className="flex items-start gap-4 mb-4">
                   <div className="text-5xl">{country.flag}</div>

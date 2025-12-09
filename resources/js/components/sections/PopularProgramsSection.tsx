@@ -79,7 +79,15 @@ export function PopularProgramsSection({ onNavigate, onCloseSideNav }: PopularPr
               Выбирайте из топовых образовательных программ мира
             </motion.p>
           </div>
-          <GetGrantButton variant="outline">Все программы</GetGrantButton>
+          <GetGrantButton
+            variant="outline"
+            onClick={() => {
+              onNavigate?.("/programs");
+              onCloseSideNav?.();
+            }}
+          >
+            Все программы
+          </GetGrantButton>
         </div>
 
         {/* Programs Grid */}
@@ -133,7 +141,7 @@ export function PopularProgramsSection({ onNavigate, onCloseSideNav }: PopularPr
                     size="sm"
                     className="w-full"
                     onClick={() => {
-                      onNavigate?.('program-detail');
+                      onNavigate?.(`/programs/${program.id}`);
                       onCloseSideNav?.();
                     }}
                   >

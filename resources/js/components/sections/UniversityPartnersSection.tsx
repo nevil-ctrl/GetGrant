@@ -56,7 +56,10 @@ export function UniversityPartnersSection({ onNavigate, onCloseSideNav }: Univer
               viewport={{ once: true }}
               transition={{ delay: index * 0.05 }}
               className="aspect-square bg-white/5 rounded-xl flex items-center justify-center hover:bg-white/10 transition-all duration-300 group cursor-pointer border border-white/10"
-              onClick={() => { onNavigate?.('university-detail'); onCloseSideNav?.(); }}
+              onClick={() => { 
+                onNavigate?.('/universities'); 
+                onCloseSideNav?.(); 
+              }}
             >
               <div className="text-center">
                 <div className="text-2xl md:text-3xl font-bold text-white group-hover:text-[#1055b2] transition-colors">
