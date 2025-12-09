@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { GetGrantCard, GetGrantCardContent, GetGrantCardFooter } from '../GetGrantCard';
 import { GetGrantButton } from '../GetGrantButton';
 import { GetGrantBadge } from '../GetGrantBadge';
@@ -8,6 +8,20 @@ import {
   GraduationCap, Star, ArrowRight 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+
+type University = {
+  id: number;
+  name: string;
+  country?: string;
+  city?: string;
+  image?: string;
+  ranking?: number;
+  tuition?: string;
+  programs?: number;
+  acceptance?: string;
+  type?: string;
+  featured?: boolean;
+};
 
 interface UniversityCatalogPageProps {
   onNavigate?: (page: string) => void;
@@ -21,87 +35,42 @@ export function UniversityCatalogPage({ onNavigate, onCloseSideNav, onSelectUniv
   const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState([0, 100000]);
+  const [universities, setUniversities] = useState<University[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const universities = [
-    {
-      id: 1,
-      name: 'Harvard University',
-      country: 'США',
-      city: 'Cambridge, MA',
-      image: 'https://images.unsplash.com/photo-1542843895-1b55d9f8ece8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoYXJ2YXJkJTIwdW5pdmVyc2l0eSUyMGNhbXB1c3xlbnwxfHx8fDE3NjQwNTY2NzJ8MA&ixlib=rb-4.1.0&q=80&w=1080',
-      ranking: 1,
-      tuition: '$54,000',
-      programs: 120,
-      acceptance: '4.5%',
-      type: 'Частный',
-      featured: true
-    },
-    {
-      id: 2,
-      name: 'Oxford University',
-      country: 'Великобритания',
-      city: 'Oxford',
-      image: 'https://images.unsplash.com/photo-1702238230256-f798027de7c9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxveGZvcmQlMjB1bml2ZXJzaXR5JTIwYnVpbGRpbmd8ZW58MXx8fHwxNzY0MDU4NjAxfDA&ixlib=rb-4.1.0&q=80&w=1080',
-      ranking: 2,
-      tuition: '£35,000',
-      programs: 95,
-      acceptance: '17.5%',
-      type: 'Государственный',
-      featured: true
-    },
-    {
-      id: 3,
-      name: 'Stanford University',
-      country: 'США',
-      city: 'Stanford, CA',
-      image: 'https://images.unsplash.com/photo-1762410281840-686c2d40cd42?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzdGFuZm9yZCUyMGNhbXB1cyUyMGFyY2hpdGVjdHVyZXxlbnwxfHx8fDE3NjQwNTg2MDF8MA&ixlib=rb-4.1.0&q=80&w=1080',
-      ranking: 3,
-      tuition: '$56,000',
-      programs: 110,
-      acceptance: '3.9%',
-      type: 'Частный',
-      featured: false
-    },
-    {
-      id: 4,
-      name: 'Cambridge University',
-      country: 'Великобритания',
-      city: 'Cambridge',
-      image: 'https://images.unsplash.com/photo-1702238230256-f798027de7c9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxveGZvcmQlMjB1bml2ZXJzaXR5JTIwYnVpbGRpbmd8ZW58MXx8fHwxNzY0MDU4NjAxfDA&ixlib=rb-4.1.0&q=80&w=1080',
-      ranking: 4,
-      tuition: '£34,000',
-      programs: 88,
-      acceptance: '21%',
-      type: 'Государственный',
-      featured: false
-    },
-    {
-      id: 5,
-      name: 'MIT',
-      country: 'США',
-      city: 'Cambridge, MA',
-      image: 'https://images.unsplash.com/photo-1542843895-1b55d9f8ece8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoYXJ2YXJkJTIwdW5pdmVyc2l0eSUyMGNhbXB1c3xlbnwxfHx8fDE3NjQwNTY2NzJ8MA&ixlib=rb-4.1.0&q=80&w=1080',
-      ranking: 5,
-      tuition: '$55,000',
-      programs: 75,
-      acceptance: '6.7%',
-      type: 'Частный',
-      featured: true
-    },
-    {
-      id: 6,
-      name: 'Yale University',
-      country: 'США',
-      city: 'New Haven, CT',
-      image: 'https://images.unsplash.com/photo-1542843895-1b55d9f8ece8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoYXJ2YXJkJTIwdW5pdmVyc2l0eSUyMGNhbXB1c3xlbnwxfHx8fDE3NjQwNTY2NzJ8MA&ixlib=rb-4.1.0&q=80&w=1080',
-      ranking: 6,
-      tuition: '$57,000',
-      programs: 105,
-      acceptance: '5.3%',
-      type: 'Частный',
-      featured: false
-    }
-  ];
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const res = await fetch('/api/universities', { credentials: 'include' });
+        if (!res.ok) throw new Error('Не удалось загрузить университеты');
+        const json = await res.json();
+        const data = Array.isArray(json) ? json : json.data || [];
+        const normalized: University[] = data.map((item: any) => ({
+          id: item.id,
+          name: item.name,
+          country: item.country?.name || item.country_name,
+          city: item.city,
+          image: item.logo || item.image,
+          ranking: item.ranking,
+          tuition: item.cost_min && item.cost_max ? `${item.cost_min} - ${item.cost_max}` : undefined,
+          programs: item.programs_count || item.programs?.length,
+          acceptance: item.acceptance_rate,
+          type: item.type,
+          featured: item.is_top || item.is_featured,
+        }));
+        setUniversities(normalized);
+      } catch (e: any) {
+        setError(e.message || 'Ошибка загрузки данных');
+        setUniversities([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
 
   const countries = ['США', 'Великобритания', 'Канада', 'Германия', 'Австралия'];
   const types = ['Частный', 'Государственный'];
@@ -211,7 +180,8 @@ export function UniversityCatalogPage({ onNavigate, onCloseSideNav, onSelectUniv
             Каталог университетов
           </h1>
           <p className="text-[#6D7A89]">
-            Найдено {universities.length} университетов
+            {loading ? 'Загрузка...' : `Найдено ${universities.length} университетов`}
+            {error && <span className="text-red-500 ml-2">{error}</span>}
           </p>
         </div>
 

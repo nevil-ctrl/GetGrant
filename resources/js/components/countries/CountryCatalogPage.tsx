@@ -1,8 +1,20 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { GetGrantCard, GetGrantCardContent } from '../GetGrantCard';
 import { GetGrantButton } from '../GetGrantButton';
 import { Check, TrendingUp, DollarSign, Home, Briefcase } from 'lucide-react';
 import { motion } from 'motion/react';
+
+type Country = {
+  id: number;
+  name: string;
+  fullName?: string;
+  flag?: string;
+  universities?: number;
+  students?: number;
+  avgCost?: string;
+  topUniversities?: string[];
+  benefits?: string[];
+};
 
 interface CountryCatalogPageProps {
   onNavigate?: (page: string) => void;
@@ -10,152 +22,39 @@ interface CountryCatalogPageProps {
 }
 
 export function CountryCatalogPage({ onNavigate, onCloseSideNav }: CountryCatalogPageProps) {
-  const countries = [
-    {
-      id: 1,
-      flag: '🇺🇸',
-      name: 'США',
-      fullName: 'Соединенные Штаты Америки',
-      universities: 2500,
-      students: 200,
-      avgCost: '$40,000-70,000',
-      topUniversities: ['Harvard', 'MIT', 'Stanford'],
-      benefits: [
-        'Топ университеты мира',
-        'Широкий выбор программ',
-        'Постдипломная работа (OPT)',
-        'Инновационная среда'
-      ]
-    },
-    {
-      id: 2,
-      flag: '🇬🇧',
-      name: 'Великобритания',
-      fullName: 'Соединённое Королевство',
-      universities: 160,
-      students: 150,
-      avgCost: '£20,000-40,000',
-      topUniversities: ['Oxford', 'Cambridge', 'Imperial College'],
-      benefits: [
-        'Престижное образование',
-        'Короткие программы (3 года)',
-        'Graduate Route виза',
-        'Культурное разнообразие'
-      ]
-    },
-    {
-      id: 3,
-      flag: '🇨🇦',
-      name: 'Канада',
-      fullName: 'Канада',
-      universities: 100,
-      students: 120,
-      avgCost: 'CAD 25,000-50,000',
-      topUniversities: ['Toronto', 'UBC', 'McGill'],
-      benefits: [
-        'Доступные цены',
-        'Иммиграционные программы',
-        'Высокое качество жизни',
-        'Безопасная среда'
-      ]
-    },
-    {
-      id: 4,
-      flag: '🇩🇪',
-      name: 'Германия',
-      fullName: 'Федеративная Республика Германия',
-      universities: 400,
-      students: 80,
-      avgCost: '€0-20,000',
-      topUniversities: ['TUM', 'LMU Munich', 'Heidelberg'],
-      benefits: [
-        'Бесплатное образование',
-        'Сильные технические ВУЗы',
-        'Европейский диплом',
-        'Возможность работы'
-      ]
-    },
-    {
-      id: 5,
-      flag: '🇦🇺',
-      name: 'Австралия',
-      fullName: 'Австралийский Союз',
-      universities: 43,
-      students: 65,
-      avgCost: 'AUD 30,000-50,000',
-      topUniversities: ['Melbourne', 'Sydney', 'ANU'],
-      benefits: [
-        'Высокие рейтинги',
-        'Комфортный климат',
-        'Работа во время учёбы',
-        'Мультикультурность'
-      ]
-    },
-    {
-      id: 6,
-      flag: '🇳🇱',
-      name: 'Нидерланды',
-      fullName: 'Королевство Нидерландов',
-      universities: 70,
-      students: 45,
-      avgCost: '€8,000-20,000',
-      topUniversities: ['Amsterdam', 'Delft', 'Utrecht'],
-      benefits: [
-        'Программы на английском',
-        'Инновационный подход',
-        'Центр Европы',
-        'Студенческие льготы'
-      ]
-    },
-    {
-      id: 7,
-      flag: '🇫🇷',
-      name: 'Франция',
-      fullName: 'Французская Республика',
-      universities: 300,
-      students: 40,
-      avgCost: '€3,000-15,000',
-      topUniversities: ['Sorbonne', 'Sciences Po', 'HEC Paris'],
-      benefits: [
-        'Низкая стоимость',
-        'Европейское качество',
-        'Культурное наследие',
-        'Французский язык'
-      ]
-    },
-    {
-      id: 8,
-      flag: '🇸🇬',
-      name: 'Сингапур',
-      fullName: 'Республика Сингапур',
-      universities: 15,
-      students: 30,
-      avgCost: 'SGD 25,000-45,000',
-      topUniversities: ['NUS', 'NTU', 'SMU'],
-      benefits: [
-        'Азиатский хаб',
-        'Высокие технологии',
-        'Безопасность',
-        'Английский язык'
-      ]
-    },
-    {
-      id: 9,
-      flag: '🇨🇭',
-      name: 'Швейцария',
-      fullName: 'Швейцарская Конфедерация',
-      universities: 50,
-      students: 25,
-      avgCost: 'CHF 1,000-8,000',
-      topUniversities: ['ETH Zurich', 'EPFL', 'Geneva'],
-      benefits: [
-        'Низкая стоимость',
-        'Топ-исследования',
-        'Многоязычность',
-        'Центр Европы'
-      ]
-    }
-  ];
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const res = await fetch('/api/countries', { credentials: 'include' });
+        if (!res.ok) throw new Error('Не удалось загрузить страны');
+        const json = await res.json();
+        const normalized: Country[] = (Array.isArray(json) ? json : json.data || []).map((c: any) => ({
+          id: c.id,
+          name: c.name,
+          fullName: c.full_name || c.name,
+          flag: c.flag,
+          universities: c.universities_count,
+          students: c.students_count,
+          avgCost: c.avg_cost,
+          topUniversities: c.top_universities || [],
+          benefits: c.selling_points || [],
+        }));
+        setCountries(normalized);
+      } catch (e: any) {
+        setError(e.message || 'Ошибка загрузки данных');
+        setCountries([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#F5F5F5]">
@@ -170,7 +69,8 @@ export function CountryCatalogPage({ onNavigate, onCloseSideNav }: CountryCatalo
             Выберите страну для обучения
           </h1>
           <p className="text-lg text-[#6D7A89] max-w-2xl mx-auto">
-            Исследуйте образовательные возможности в ведущих странах мира
+            {loading ? 'Загрузка стран...' : 'Исследуйте образовательные возможности в ведущих странах мира'}
+            {error && <span className="text-red-500 block mt-2">{error}</span>}
           </p>
         </motion.div>
 

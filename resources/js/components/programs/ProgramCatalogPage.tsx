@@ -1,10 +1,23 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { GetGrantCard, GetGrantCardContent, GetGrantCardFooter } from '../GetGrantCard';
 import { GetGrantButton } from '../GetGrantButton';
 import { GetGrantBadge } from '../GetGrantBadge';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { Filter, X, Search, BookOpen, Clock, DollarSign, TrendingUp, Star } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+
+type Program = {
+  id: number;
+  name: string;
+  field?: string;
+  level?: string;
+  duration?: string;
+  avgSalary?: string;
+  universities?: number;
+  image?: string;
+  popular?: boolean;
+  careers?: string[];
+};
 
 interface ProgramCatalogPageProps {
   onNavigate?: (page: string) => void;
@@ -16,89 +29,70 @@ export function ProgramCatalogPage({ onNavigate, onCloseSideNav }: ProgramCatalo
   const [selectedField, setSelectedField] = useState<string[]>([]);
   const [selectedLevel, setSelectedLevel] = useState<string[]>([]);
   const [search, setSearch] = useState("");
+  const [programs, setPrograms] = useState<Program[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const programs = [
-    {
-      id: 1,
-      name: 'Computer Science',
-      field: 'Технологии',
-      level: 'Bachelor',
-      duration: '4 года',
-      avgSalary: '$85,000',
-      universities: 150,
-      image: 'https://images.unsplash.com/photo-1611648694931-1aeda329f9da?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb21wdXRlciUyMHNjaWVuY2UlMjB0ZWNobm9sb2d5fGVufDF8fHx8MTc2Mzk1MjAwOHww&ixlib=rb-4.1.0&q=80&w=1080',
-      popular: true,
-      careers: ['Software Engineer', 'Data Scientist', 'AI Specialist']
-    },
-    {
-      id: 2,
-      name: 'Business Administration',
-      field: 'Бизнес',
-      level: 'Bachelor',
-      duration: '4 года',
-      avgSalary: '$65,000',
-      universities: 200,
-      image: 'https://images.unsplash.com/photo-1665979738279-bd2441290e02?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxidXNpbmVzcyUyMHN0dWRpZXMlMjB1bml2ZXJzaXR5fGVufDF8fHx8MTc2NDA1ODM2MXww&ixlib=rb-4.1.0&q=80&w=1080',
-      popular: true,
-      careers: ['Business Analyst', 'Manager', 'Entrepreneur']
-    },
-    {
-      id: 3,
-      name: 'Medicine',
-      field: 'Медицина',
-      level: 'Pre-Med',
-      duration: '4 года',
-      avgSalary: '$200,000',
-      universities: 80,
-      image: 'https://images.unsplash.com/photo-1712782390367-6d9a2843d893?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtZWRpY2FsJTIwc2Nob29sJTIwc3R1ZGVudHxlbnwxfHx8fDE3NjQwNTgzNjJ8MA&ixlib=rb-4.1.0&q=80&w=1080',
-      popular: false,
-      careers: ['Doctor', 'Surgeon', 'Medical Researcher']
-    },
-    {
-      id: 4,
-      name: 'Engineering',
-      field: 'Инженерия',
-      level: 'Bachelor',
-      duration: '4 года',
-      avgSalary: '$75,000',
-      universities: 180,
-      image: 'https://images.unsplash.com/photo-1611648694931-1aeda329f9da?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb21wdXRlciUyMHNjaWVuY2UlMjB0ZWNobm9sb2d5fGVufDF8fHx8MTc2Mzk1MjAwOHww&ixlib=rb-4.1.0&q=80&w=1080',
-      popular: true,
-      careers: ['Mechanical Engineer', 'Civil Engineer', 'Electrical Engineer']
-    },
-    {
-      id: 5,
-      name: 'Arts & Design',
-      field: 'Искусство',
-      level: 'Bachelor',
-      duration: '3-4 года',
-      avgSalary: '$50,000',
-      universities: 120,
-      image: 'https://images.unsplash.com/photo-1682616323080-b98015597e1f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhcnQlMjBkZXNpZ24lMjBzdHVkZW50fGVufDF8fHx8MTc2NDA1ODM2Mnww&ixlib=rb-4.1.0&q=80&w=1080',
-      popular: false,
-      careers: ['Graphic Designer', 'Art Director', 'UX Designer']
-    },
-    {
-      id: 6,
-      name: 'Data Science',
-      field: 'Технологии',
-      level: 'Master',
-      duration: '2 года',
-      avgSalary: '$95,000',
-      universities: 100,
-      image: 'https://images.unsplash.com/photo-1611648694931-1aeda329f9da?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb21wdXRlciUyMHNjaWVuY2UlMjB0ZWNobm9sb2d5fGVufDF8fHx8MTc2Mzk1MjAwOHww&ixlib=rb-4.1.0&q=80&w=1080',
-      popular: true,
-      careers: ['Data Scientist', 'ML Engineer', 'Analytics Manager']
-    }
-  ];
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const res = await fetch('/api/programs', { credentials: 'include' });
+        if (!res.ok) throw new Error('Не удалось загрузить программы');
+        const json = await res.json();
+        const data = Array.isArray(json) ? json : json.data || [];
+        const normalized: Program[] = data.map((p: any) => ({
+          id: p.id,
+          name: p.name || '',
+          field: p.field_of_study || p.field || '',
+          level: p.level || '',
+          duration: p.duration || '',
+          avgSalary: p.avg_salary || '',
+          universities: p.universities_count || 0,
+          image: p.image || p.cover || '',
+          popular: !!p.is_top,
+          careers: Array.isArray(p.career_info)
+            ? p.career_info.map((c: any) => {
+                if (typeof c === 'string') return c;
+                if (c && typeof c === 'object') return c.career || c.name || JSON.stringify(c);
+                return '';
+              }).filter(Boolean)
+            : Array.isArray(p.careers)
+              ? p.careers.map((c: any) => {
+                  if (typeof c === 'string') return c;
+                  if (c && typeof c === 'object') return c.career || c.name || JSON.stringify(c);
+                  return '';
+                }).filter(Boolean)
+              : [],
+        }));
+        setPrograms(normalized);
+      } catch (e: any) {
+        setError(e.message || 'Ошибка загрузки данных');
+        setPrograms([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
 
-  const fields = ['Технологии', 'Бизнес', 'Медицина', 'Инженерия', 'Искусство', 'Науки'];
-  const levels = ['Bachelor', 'Master', 'PhD', 'Pre-Med'];
+  const fields = useMemo(() => {
+    const dynamic = Array.from(new Set(programs.map((p) => p.field).filter(Boolean))) as string[];
+    const base = ['Технологии', 'Бизнес', 'Медицина', 'Инженерия', 'Искусство', 'Науки'];
+    return dynamic.length ? dynamic : base;
+  }, [programs]);
+
+  const levels = useMemo(() => {
+    const dynamic = Array.from(new Set(programs.map((p) => p.level).filter(Boolean))) as string[];
+    const base = ['Bachelor', 'Master', 'PhD', 'Pre-Med'];
+    return dynamic.length ? dynamic : base;
+  }, [programs]);
 
   const filtered = programs.filter((p) => {
-    const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase().trim());
-    const matchesField = selectedField.length === 0 || selectedField.includes(p.field);
-    const matchesLevel = selectedLevel.length === 0 || selectedLevel.includes(p.level);
+    const matchesSearch = (p.name || '').toLowerCase().includes(search.toLowerCase().trim());
+    const matchesField = selectedField.length === 0 || (p.field && selectedField.includes(p.field));
+    const matchesLevel = selectedLevel.length === 0 || (p.level && selectedLevel.includes(p.level));
     return matchesSearch && matchesField && matchesLevel;
   });
 
@@ -190,7 +184,8 @@ export function ProgramCatalogPage({ onNavigate, onCloseSideNav }: ProgramCatalo
             Каталог программ
           </h1>
           <p className="text-[#6D7A89]">
-            Найдено {filtered.length} программ обучения
+            {loading ? 'Загрузка...' : `Найдено ${filtered.length} программ обучения`}
+            {error && <span className="text-red-500 ml-2">{error}</span>}
           </p>
         </div>
 
@@ -262,17 +257,17 @@ export function ProgramCatalogPage({ onNavigate, onCloseSideNav }: ProgramCatalo
                       <div className="p-6">
                         <div className="flex items-start justify-between mb-3">
                           <h3 className="text-xl font-semibold text-[#1A1A1A]">{program.name}</h3>
-                          <GetGrantBadge variant="outline">{program.level}</GetGrantBadge>
+                          <GetGrantBadge variant="outline">{program.level || '—'}</GetGrantBadge>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4 mb-4">
                           <div className="flex items-center gap-2 text-sm">
                             <Clock className="w-4 h-4 text-[#6D7A89]" />
-                            <span className="text-[#6D7A89]">{program.duration}</span>
+                            <span className="text-[#6D7A89]">{program.duration || '—'}</span>
                           </div>
                           <div className="flex items-center gap-2 text-sm">
                             <BookOpen className="w-4 h-4 text-[#6D7A89]" />
-                            <span className="text-[#6D7A89]">{program.universities} ВУЗов</span>
+                            <span className="text-[#6D7A89]">{program.universities ?? 0} ВУЗов</span>
                           </div>
                         </div>
 
@@ -280,21 +275,21 @@ export function ProgramCatalogPage({ onNavigate, onCloseSideNav }: ProgramCatalo
                           <TrendingUp className="w-4 h-4 text-[#1A1A1A]" />
                           <div>
                             <div className="text-xs text-[#6D7A89]">Средняя зарплата</div>
-                            <div className="font-semibold text-[#1A1A1A]">{program.avgSalary}/год</div>
+                            <div className="font-semibold text-[#1A1A1A]">{program.avgSalary || '—'}/год</div>
                           </div>
                         </div>
 
                         <div>
                           <div className="text-xs text-[#6D7A89] mb-2">Карьерные пути:</div>
                           <div className="flex flex-wrap gap-2">
-                            {program.careers.slice(0, 2).map((career) => (
+                            {(program.careers || []).slice(0, 2).map((career) => (
                               <span key={career} className="text-xs px-2 py-1 bg-[#F5F5F5] rounded">
                                 {career}
                               </span>
                             ))}
-                            {program.careers.length > 2 && (
+                            {(program.careers || []).length > 2 && (
                               <span className="text-xs px-2 py-1 bg-[#F5F5F5] rounded">
-                                +{program.careers.length - 2}
+                                +{(program.careers || []).length - 2}
                               </span>
                             )}
                           </div>

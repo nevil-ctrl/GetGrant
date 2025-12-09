@@ -3,6 +3,8 @@ import { ChevronDown, User } from 'lucide-react';
 import { GetGrantButton } from './GetGrantButton';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/auth/useAuth';
 
 
 
@@ -13,6 +15,43 @@ interface HeaderProps {
 }
 
 export function Header({ isAuthenticated = false, onNavigate }: HeaderProps) {
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const isUserAuthenticated = isAuthenticated || !!user;
+
+  const handleNavigate = (path: string) => {
+    if (onNavigate) {
+      onNavigate(path);
+      return;
+    }
+    navigate(path);
+  };
+
+  const handleConsultationClick = () => {
+    if (!isUserAuthenticated) {
+      handleNavigate('/auth/login');
+      return;
+    }
+    handleNavigate('/dashboard');
+  };
+
+  const handleProfileClick = () => {
+    if (!isUserAuthenticated) {
+      handleNavigate('/auth/login');
+      return;
+    }
+    handleNavigate('/dashboard');
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      handleNavigate('/');
+    } catch (err) {
+      console.error('Logout failed', err);
+    }
+  };
+
   const navigation = [
     { name: 'Университеты', path: '/universities' },
     { name: 'Страны', path: '/countries' },
@@ -28,7 +67,7 @@ export function Header({ isAuthenticated = false, onNavigate }: HeaderProps) {
           {/* Logo (click -> home) */}
           <button
             onClick={() => {
-              onNavigate?.('/');
+              handleNavigate('/');
             }}
             className="flex items-center gap-2 focus:outline-none"
             aria-label="Перейти на главную"
@@ -44,7 +83,7 @@ export function Header({ isAuthenticated = false, onNavigate }: HeaderProps) {
             {navigation.map((item) => (
               <button
                 key={item.name}
-                onClick={() => onNavigate?.(item.path)}
+                onClick={() => handleNavigate(item.path)}
                 className="text-[#1A1A1A] hover:text-[#6D7A89] transition-colors font-medium cursor-pointer"
               >
                 {item.name}
@@ -54,33 +93,55 @@ export function Header({ isAuthenticated = false, onNavigate }: HeaderProps) {
 
           {/* Desktop CTA */}
           <div className="hidden lg:flex items-center gap-4">
-            {!isAuthenticated ? (
+            {!isUserAuthenticated ? (
               <>
-                <GetGrantButton variant="ghost" size="sm" onClick={() => onNavigate?.('/auth/login')}>
+                <GetGrantButton variant="ghost" size="sm" onClick={() => handleNavigate('/auth/login')}>
                   Войти
                 </GetGrantButton>
-                <GetGrantButton variant="primary" size="sm" onClick={() => onNavigate?.('/auth/register')}>
+                <GetGrantButton variant="primary" size="sm" onClick={handleConsultationClick}>
                   Получить консультацию
                 </GetGrantButton>
               </>
             ) : (
-              <button className="flex items-center gap-2 p-2 hover:bg-[#F5F5F5] rounded-lg transition-colors">
-                <div className="w-10 h-10 bg-[#1055b2] rounded-full flex items-center justify-center">
-                  <User className="w-5 h-5 text-[#1A1A1A]" />
-                </div>
-                <ChevronDown className="w-4 h-4 text-[#6D7A89]" />
-              </button>
+              <>
+                <button
+                  onClick={handleProfileClick}
+                  className="flex items-center gap-2 p-2 hover:bg-[#F5F5F5] rounded-lg transition-colors"
+                  aria-label="Открыть профиль"
+                >
+                  <div className="w-10 h-10 bg-[#1055b2] rounded-full flex items-center justify-center">
+                    <User className="w-5 h-5 text-[#1A1A1A]" />
+                  </div>
+                  <ChevronDown className="w-4 h-4 text-[#6D7A89]" />
+                </button>
+                <GetGrantButton variant="ghost" size="sm" onClick={handleLogout}>
+                  Выйти
+                </GetGrantButton>
+              </>
             )}
           </div>
 
           {/* Mobile CTA simplified (без гамбургера) */}
           <div className="lg:hidden flex items-center gap-2">
-            <GetGrantButton variant="ghost" size="sm" onClick={() => onNavigate?.('/auth/login')}>
-              Войти
-            </GetGrantButton>
-            <GetGrantButton variant="primary" size="sm" onClick={() => onNavigate?.('/auth/register')}>
-              Консультация
-            </GetGrantButton>
+            {!isUserAuthenticated ? (
+              <>
+                <GetGrantButton variant="ghost" size="sm" onClick={() => handleNavigate('/auth/login')}>
+                  Войти
+                </GetGrantButton>
+                <GetGrantButton variant="primary" size="sm" onClick={handleConsultationClick}>
+                  Консультация
+                </GetGrantButton>
+              </>
+            ) : (
+              <>
+                <GetGrantButton variant="ghost" size="sm" onClick={handleProfileClick}>
+                  Профиль
+                </GetGrantButton>
+                <GetGrantButton variant="primary" size="sm" onClick={handleLogout}>
+                  Выйти
+                </GetGrantButton>
+              </>
+            )}
           </div>
         </div>
       </div>

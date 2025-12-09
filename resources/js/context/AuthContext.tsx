@@ -3,6 +3,7 @@ import { createContext } from "react";
 export interface LoginCredentials {
     email: string;
     password: string;
+    remember?: boolean;
 }
 
 export interface RegisterData {
@@ -10,6 +11,9 @@ export interface RegisterData {
     email: string;
     password: string;
     password_confirmation: string;
+    phone?: string;
+    profile_type?: 'student' | 'parent';
+    manager_id?: number | null;
 }
 
 interface AuthContextType {

@@ -99,7 +99,7 @@ export default function Router() {
                     path="/universities" 
                     element={
                         <>
-                            <Header />
+                            <Header onNavigate={go} />
                             <UniversityCatalogPage 
                                 onNavigate={go} 
                                 onCloseSideNav={() => {}} 
@@ -110,6 +110,18 @@ export default function Router() {
                     } 
                 />
                 <Route path="/universities/:id" element={<><Header onNavigate={go} /><UniversityDetailPage universityId={null} /><Footer onNavigate={go} /></>} />
+                <Route 
+                    path="/dashboard" 
+                    element={
+                        <AuthWrapper>
+                            <>
+                                <Header onNavigate={go} isAuthenticated />
+                                <DashboardPage />
+                                <Footer onNavigate={go} />
+                            </>
+                        </AuthWrapper>
+                    } 
+                />
 
                 <Route 
                     path="/countries" 

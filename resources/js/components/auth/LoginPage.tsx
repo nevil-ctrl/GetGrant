@@ -1,48 +1,29 @@
 import React, { useState } from 'react';
 import { GetGrantButton } from '../GetGrantButton';
 import { GetGrantInput } from '../GetGrantInput';
-import { GetGrantModal } from '../GetGrantModal';
-import { Mail, Phone, Facebook, Chrome } from 'lucide-react';
+import { Mail, Lock } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useAuth } from '@/auth/useAuth';
 
 export function LoginPage({ onSwitchToRegister, onNavigate, onCloseSideNav }: { onSwitchToRegister: () => void; onNavigate?: (page: string) => void; onCloseSideNav?: () => void }) {
-  const [loginMethod, setLoginMethod] = useState<'phone' | 'email'>('phone');
-  const [showOTP, setShowOTP] = useState(false);
-  const [otpValues, setOtpValues] = useState(['', '', '', '', '', '']);
-  const [timer, setTimer] = useState(60);
-  const [phoneOrEmail, setPhoneOrEmail] = useState('');
+  const { login } = useAuth();
+  const [form, setForm] = useState({ email: '', password: '', remember: false });
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  React.useEffect(() => {
-    if (showOTP && timer > 0) {
-      const interval = setInterval(() => {
-        setTimer((prev) => prev - 1);
-      }, 1000);
-      return () => clearInterval(interval);
+  const handleSubmit = async () => {
+    try {
+      setSubmitting(true);
+      setError(null);
+      await login({ email: form.email, password: form.password, remember: form.remember });
+      onNavigate?.('/dashboard');
+      onCloseSideNav?.();
+    } catch (e: any) {
+      setError('Не удалось войти. Проверьте данные и попробуйте снова.');
+      console.error(e);
+    } finally {
+      setSubmitting(false);
     }
-  }, [showOTP, timer]);
-
-  const handleOTPChange = (index: number, value: string) => {
-    if (value.length <= 1 && /^\d*$/.test(value)) {
-      const newOTP = [...otpValues];
-      newOTP[index] = value;
-      setOtpValues(newOTP);
-      
-      // Auto-focus next input
-      if (value && index < 5) {
-        const nextInput = document.getElementById(`otp-${index + 1}`);
-        nextInput?.focus();
-      }
-    }
-  };
-
-  const handleLogin = () => {
-    setShowOTP(true);
-    setTimer(60);
-  };
-
-  const handleResendOTP = () => {
-    setTimer(60);
-    setOtpValues(['', '', '', '', '', '']);
   };
 
   return (
@@ -71,84 +52,62 @@ export function LoginPage({ onSwitchToRegister, onNavigate, onCloseSideNav }: { 
           <h2 className="text-2xl font-bold text-[#1A1A1A] text-center mb-2">
             Вход в систему
           </h2>
-          <p className="text-[#6D7A89] text-center mb-8">
+          <p className="text-[#6D7A89] text-center mb-4">
             Войдите, чтобы продолжить работу
           </p>
 
-          {/* Login Method Toggle */}
-          <div className="flex gap-2 mb-6 bg-[#F5F5F5] p-1 rounded-lg">
-            <button
-              onClick={() => setLoginMethod('phone')}
-              className={`flex-1 py-2 px-4 rounded-md transition-all duration-200 font-medium ${
-                loginMethod === 'phone'
-                  ? 'bg-white text-[#1A1A1A] shadow-sm'
-                  : 'text-[#6D7A89]'
-              }`}
-            >
-              Телефон
-            </button>
-            <button
-              onClick={() => setLoginMethod('email')}
-              className={`flex-1 py-2 px-4 rounded-md transition-all duration-200 font-medium ${
-                loginMethod === 'email'
-                  ? 'bg-white text-[#1A1A1A] shadow-sm'
-                  : 'text-[#6D7A89]'
-              }`}
-            >
-              Email
-            </button>
-          </div>
+          {error && (
+            <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg p-3">
+              {error}
+            </div>
+          )}
 
-          {/* Input Field */}
-          {loginMethod === 'phone' ? (
+          <div className="space-y-4">
             <GetGrantInput
-              type="tel"
-              placeholder="+7 (999) 123-45-67"
-              icon={<Phone className="w-5 h-5" />}
-              value={phoneOrEmail}
-              onChange={(e) => setPhoneOrEmail(e.target.value)}
-            />
-          ) : (
-            <GetGrantInput
+              label="Email"
               type="email"
               placeholder="email@example.com"
               icon={<Mail className="w-5 h-5" />}
-              value={phoneOrEmail}
-              onChange={(e) => setPhoneOrEmail(e.target.value)}
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
             />
-          )}
+            <GetGrantInput
+              label="Пароль"
+              type="password"
+              placeholder="Минимум 8 символов"
+              icon={<Lock className="w-5 h-5" />}
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+            />
+            <label className="flex items-center gap-2 text-sm text-[#6D7A89]">
+              <input
+                type="checkbox"
+                checked={form.remember}
+                onChange={(e) => setForm({ ...form, remember: e.target.checked })}
+                className="w-4 h-4 border-[#1A1A1A]/20 rounded focus:ring-[#1055b2]"
+              />
+              Запомнить меня
+            </label>
+            <div className="text-right">
+              <button
+                type="button"
+                onClick={() => onNavigate?.('/auth/forgot-password')}
+                className="text-sm text-[#1055b2] hover:underline"
+              >
+                Забыли пароль?
+              </button>
+            </div>
+          </div>
 
-          {/* Login Button */}
           <GetGrantButton
             variant="primary"
             size="lg"
             className="w-full mt-6"
-            onClick={handleLogin}
+            onClick={handleSubmit}
+            disabled={submitting}
           >
-            Получить код
+            {submitting ? 'Входим...' : 'Войти'}
           </GetGrantButton>
-
-          {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-[#1A1A1A]/10"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-[#6D7A89]">Или войти через</span>
-            </div>
-          </div>
-
-          {/* Social Login */}
-          <div className="grid grid-cols-2 gap-4">
-            <button className="flex items-center justify-center gap-2 px-4 py-3 border border-[#1A1A1A]/10 rounded-lg hover:bg-[#F5F5F5] transition-colors min-h-[44px]">
-              <Chrome className="w-5 h-5" />
-              <span className="font-medium">Google</span>
-            </button>
-            <button className="flex items-center justify-center gap-2 px-4 py-3 border border-[#1A1A1A]/10 rounded-lg hover:bg-[#F5F5F5] transition-colors min-h-[44px]">
-              <Facebook className="w-5 h-5" />
-              <span className="font-medium">Facebook</span>
-            </button>
-          </div>
 
           {/* Register Link */}
           <p className="text-center text-sm text-[#6D7A89] mt-6">
@@ -162,52 +121,6 @@ export function LoginPage({ onSwitchToRegister, onNavigate, onCloseSideNav }: { 
           </p>
         </div>
       </motion.div>
-
-      {/* OTP Modal */}
-      <GetGrantModal isOpen={showOTP} onClose={() => setShowOTP(false)} title="Введите код">
-        <div className="text-center mb-6">
-          <p className="text-[#6D7A89]">
-            Мы отправили код подтверждения на {loginMethod === 'phone' ? 'телефон' : 'email'}
-          </p>
-          <p className="font-medium text-[#1A1A1A] mt-1">{phoneOrEmail}</p>
-        </div>
-
-        {/* OTP Input */}
-        <div className="flex gap-2 justify-center mb-6">
-          {otpValues.map((value, index) => (
-            <input
-              key={index}
-              id={`otp-${index}`}
-              type="text"
-              inputMode="numeric"
-              maxLength={1}
-              value={value}
-              onChange={(e) => handleOTPChange(index, e.target.value)}
-              className="w-12 h-12 text-center text-xl font-semibold border-2 border-[#1A1A1A]/10 rounded-lg focus:border-[#1055b2] focus:outline-none transition-colors"
-            />
-          ))}
-        </div>
-
-        {/* Timer & Resend */}
-        <div className="text-center mb-6">
-          {timer > 0 ? (
-            <p className="text-sm text-[#6D7A89]">
-              Отправить код повторно через {timer} сек
-            </p>
-          ) : (
-            <button
-              onClick={handleResendOTP}
-              className="text-sm text-[#1A1A1A] font-medium hover:underline"
-            >
-              Отправить код повторно
-            </button>
-          )}
-        </div>
-
-        <GetGrantButton variant="primary" size="lg" className="w-full">
-          Подтвердить
-        </GetGrantButton>
-      </GetGrantModal>
     </div>
   );
 }
