@@ -8,44 +8,47 @@ use Illuminate\Http\Request;
 
 class LessonController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        return Lesson::with('course')->get();
+        return Lesson::with('course', 'user')->get();
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        return Lesson::create($request->all());
+        $validated = $request->validate([
+            'course_id'    => 'required|exists:courses,id',
+            'user_id'      => 'required|exists:users,id',
+            'scheduled_at' => 'required|date',
+            'duration'     => 'nullable|integer|min:1',
+            'meeting_link' => 'nullable|string|max:255',
+            'status'       => 'nullable|in:scheduled,completed,cancelled',
+        ]);
+
+        return Lesson::create($validated);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
-        return Lesson::with('course')->findOrFail($id);
+        return Lesson::with('course', 'user')->findOrFail($id);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         $lesson = Lesson::findOrFail($id);
-        $lesson ->update($request->all());
-        return $lesson;
 
+        $validated = $request->validate([
+            'course_id'    => 'sometimes|exists:courses,id',
+            'user_id'      => 'sometimes|exists:users,id',
+            'scheduled_at' => 'sometimes|date',
+            'duration'     => 'nullable|integer|min:1',
+            'meeting_link' => 'nullable|string|max:255',
+            'status'       => 'nullable|in:scheduled,completed,cancelled',
+        ]);
+
+        $lesson->update($validated);
+        return $lesson;
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         return Lesson::destroy($id);

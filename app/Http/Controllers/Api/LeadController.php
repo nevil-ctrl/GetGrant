@@ -8,33 +8,45 @@ use Illuminate\Http\Request;
 
 class LeadController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        return Lead::all();
+        return Lead::with(['user', 'manager'])->get();
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        return Lead::create($request->all());
+        $validated = $request->validate([
+            'user_id'    => 'required|exists:users,id',
+            'manager_id' => 'nullable|exists:users,id',
+            'status'     => 'nullable|in:new,contacted,consultation,closed',
+            'source'     => 'nullable|string',
+            'notes'      => 'nullable|string',
+        ]);
+
+        return Lead::create($validated);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
-        return Lead::findOrFail($id);
+        return Lead::with(['user', 'manager'])->findOrFail($id);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    public function update(Request $request, string $id)
+    {
+        $lead = Lead::findOrFail($id);
+
+        $validated = $request->validate([
+            'user_id'    => 'sometimes|exists:users,id',
+            'manager_id' => 'sometimes|exists:users,id',
+            'status'     => 'nullable|in:new,contacted,consultation,closed',
+            'source'     => 'nullable|string',
+            'notes'      => 'nullable|string',
+        ]);
+
+        $lead->update($validated);
+        return $lead;
+    }
+
     public function destroy(string $id)
     {
         return Lead::destroy($id);

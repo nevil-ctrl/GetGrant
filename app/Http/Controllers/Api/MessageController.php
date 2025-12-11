@@ -8,43 +8,43 @@ use Illuminate\Http\Request;
 
 class MessageController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        return Message::with('user')->get();
+        return Message::with(['sender', 'receiver', 'application'])->get();
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        return Message::create($request->all());
+        $validated = $request->validate([
+            'sender_id'      => 'required|exists:users,id',
+            'receiver_id'    => 'required|exists:users,id',
+            'application_id' => 'nullable|exists:applications,id',
+            'message'        => 'required|string',
+        ]);
+
+        return Message::create($validated);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
-        return Message::findOrFail($id)->get();
+        return Message::with(['sender', 'receiver', 'application'])->findOrFail($id);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         $message = Message::findOrFail($id);
-        $message->update($request->all());
+
+        $validated = $request->validate([
+            'sender_id'      => 'sometimes|exists:users,id',
+            'receiver_id'    => 'sometimes|exists:users,id',
+            'application_id' => 'nullable|exists:applications,id',
+            'message'        => 'sometimes|string',
+        ]);
+
+        $message->update($validated);
         return $message;
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         return Message::destroy($id);

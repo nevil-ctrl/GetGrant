@@ -8,43 +8,45 @@ use Illuminate\Http\Request;
 
 class CourseController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        return Course::with(['lessons'])->get();
+        return Course::with('lessons')->get();
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        return Course::create($request->all());
+        $validated = $request->validate([
+            'name'        => 'required|string|max:255',
+            'type'        => 'required|string|in:english,ielts,sat,career',
+            'description' => 'nullable|string',
+            'price'       => 'nullable|numeric|min:0',
+            'is_active'   => 'nullable|boolean',
+        ]);
+
+        return Course::create($validated);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
-        return Course::with(['lessons'])->findOrFail($id);
+        return Course::with('lessons')->findOrFail($id);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         $course = Course::findOrFail($id);
-        $course->update($request->all());
 
+        $validated = $request->validate([
+            'name'        => 'sometimes|string|max:255',
+            'type'        => 'sometimes|string|in:english,ielts,sat,career',
+            'description' => 'nullable|string',
+            'price'       => 'nullable|numeric|min:0',
+            'is_active'   => 'nullable|boolean',
+        ]);
+
+        $course->update($validated);
+        return $course;
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         return Course::destroy($id);

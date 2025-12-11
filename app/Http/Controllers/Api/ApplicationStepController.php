@@ -8,43 +8,45 @@ use Illuminate\Http\Request;
 
 class ApplicationStepController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        return ApplicationStep::all();
+        return ApplicationStep::with('application')->get();
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        return ApplicationStep::create($request->all());
+        $validated = $request->validate([
+            'application_id' => 'required|exists:applications,id',
+            'title'          => 'required|string|max:255',
+            'description'    => 'nullable|string',
+            'status'         => 'nullable|in:pending,completed',
+            'completed_at'   => 'nullable|date',
+        ]);
+
+        return ApplicationStep::create($validated);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
-        return ApplicationStep::findOrFail($id);
+        return ApplicationStep::with('application')->findOrFail($id);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         $step = ApplicationStep::findOrFail($id);
-        $step->update($request->all());
+
+        $validated = $request->validate([
+            'application_id' => 'sometimes|exists:applications,id',
+            'title'          => 'sometimes|string|max:255',
+            'description'    => 'nullable|string',
+            'status'         => 'nullable|in:pending,completed',
+            'completed_at'   => 'nullable|date',
+        ]);
+
+        $step->update($validated);
         return $step;
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         return ApplicationStep::destroy($id);
