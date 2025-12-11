@@ -2,22 +2,22 @@
 
 namespace Database\Factories;
 
+use App\Models\Manager;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Manager>
- */
 class ManagerFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
-    public function definition(): array
+    protected $model = Manager::class;
+
+    public function definition()
     {
         return [
-            //
+            'user_id' => User::factory(),
+            'specialization' => $this->faker->randomElement(['USA', 'UK', 'General']),
+            'workload' => 0,
+            'max_workload' => 50,
+            'status' => 'active',
         ];
     }
 }

@@ -2,22 +2,24 @@
 
 namespace Database\Factories;
 
+use App\Models\Lesson;
+use App\Models\Course;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Lesson>
- */
 class LessonFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
-    public function definition(): array
+    protected $model = Lesson::class;
+
+    public function definition()
     {
         return [
-            //
+            'course_id' => Course::factory(),
+            'user_id' => User::factory(),
+            'scheduled_at' => $this->faker->dateTimeBetween('+1 days', '+1 month'),
+            'duration' => $this->faker->numberBetween(30, 120),
+            'meeting_link' => $this->faker->url(),
+            'status' => $this->faker->randomElement(['scheduled', 'completed', 'cancelled']),
         ];
     }
 }

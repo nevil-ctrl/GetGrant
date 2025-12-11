@@ -2,22 +2,22 @@
 
 namespace Database\Factories;
 
+use App\Models\ApplicationStep;
+use App\Models\Application;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ApplicationStep>
- */
 class ApplicationStepFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
-    public function definition(): array
+    protected $model = ApplicationStep::class;
+
+    public function definition()
     {
         return [
-            //
+            'application_id' => Application::factory(),
+            'title' => $this->faker->sentence(3),
+            'description' => $this->faker->paragraph(),
+            'status' => $this->faker->randomElement(['pending', 'completed']),
+            'completed_at' => null,
         ];
     }
 }

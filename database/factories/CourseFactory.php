@@ -2,22 +2,21 @@
 
 namespace Database\Factories;
 
+use App\Models\Course;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Course>
- */
 class CourseFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
-    public function definition(): array
+    protected $model = Course::class;
+
+    public function definition()
     {
         return [
-            //
+            'name' => $this->faker->sentence(2),
+            'type' => $this->faker->randomElement(['english', 'ielts', 'sat', 'career']),
+            'description' => $this->faker->paragraph(),
+            'price' => $this->faker->randomFloat(2, 50, 500),
+            'is_active' => true,
         ];
     }
 }

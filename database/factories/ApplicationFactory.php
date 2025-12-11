@@ -2,6 +2,10 @@
 
 namespace Database\Factories;
 
+use App\Models\Application;
+use App\Models\User;
+use App\Models\University;
+use App\Models\Program;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +21,17 @@ class ApplicationFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'user_id' => User::factory(),
+            'university_id' => University::factory(),
+            'program_id' => Program::factory(),
+            'status' => $this->faker->randomElement(['consultation', 'documents', 'submission', 'offer', 'visa', 'departure']),
+            'timeline' => [
+                'consultation' => now()->addDays(1)->toDateString(),
+                'document' => now()->addDays(3)->toDateString(),
+            ],
+            'notes' => $this->faker->sentence(),
+
+
         ];
     }
 }

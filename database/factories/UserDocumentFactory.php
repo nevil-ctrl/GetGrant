@@ -2,22 +2,25 @@
 
 namespace Database\Factories;
 
+use App\Models\UserDocument;
+use App\Models\User;
+use App\Models\Application;
+use App\Models\Document;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\UserDocument>
- */
 class UserDocumentFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
-    public function definition(): array
+    protected $model = UserDocument::class;
+
+    public function definition()
     {
         return [
-            //
+            'user_id' => User::factory(),
+            'application_id' => Application::factory(),
+            'type' => $this->faker->randomElement(['license', 'certificate', 'other']),
+            'file_path' => 'user_documents/' . $this->faker->uuid() . '.pdf',
+            'status' => $this->faker->randomElement(['waiting', 'approved', 'rejected']),
+            'comment' => $this->faker->sentence(),
         ];
     }
 }

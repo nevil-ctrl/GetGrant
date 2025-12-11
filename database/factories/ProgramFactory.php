@@ -3,21 +3,25 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\University;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Program>
- */
 class ProgramFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
+    protected $model = \App\Models\Program::class;
+
     public function definition(): array
     {
         return [
-            //
+            'name' => $this->faker->jobTitle(),
+            'university_id' => University::factory(),
+            'description' => $this->faker->paragraph(),
+            'field_of_study' => $this->faker->randomElement(['Computer Science', 'Business', 'Engineering', 'Arts']),
+            'is_top' => $this->faker->boolean(30),
+            'career_info' => json_encode([
+                'average_salary' => $this->faker->numberBetween(30000, 120000),
+                'job_growth' => $this->faker->numberBetween(5, 20) . '%',
+            ]),
+            'is_active' => $this->faker->boolean(90),
         ];
     }
 }
