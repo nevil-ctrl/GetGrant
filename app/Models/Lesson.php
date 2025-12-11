@@ -7,6 +7,28 @@ use Illuminate\Database\Eloquent\Model;
 
 class Lesson extends Model
 {
-    /** @use HasFactory<\Database\Factories\LessonFactory> */
     use HasFactory;
+
+    protected $fillable = [
+        'course_id',
+        'user_id',
+        'scheduled_at',
+        'duration',
+        'meeting_link',
+        'status',
+    ];
+
+    protected $casts = [
+        'scheduled_at' => 'datetime',
+    ];
+
+    public function course()
+    {
+        return $this->belongsTo(Course::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

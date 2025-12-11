@@ -7,6 +7,18 @@ use Illuminate\Database\Eloquent\Model;
 
 class Document extends Model
 {
-    /** @use HasFactory<\Database\Factories\DocumentFactory> */
     use HasFactory;
+
+    protected $fillable = [
+        'name',
+        'type',
+        'file_path',
+        'description',
+        'is_active',
+    ];
+
+    public function userDocuments()
+    {
+        return $this->hasMany(UserDocument::class);
+    }
 }

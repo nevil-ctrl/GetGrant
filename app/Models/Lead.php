@@ -7,6 +7,23 @@ use Illuminate\Database\Eloquent\Model;
 
 class Lead extends Model
 {
-    /** @use HasFactory<\Database\Factories\LeadFactory> */
     use HasFactory;
+
+    protected $fillable = [
+        'user_id',
+        'manager_id',
+        'status',
+        'source',
+        'notes',
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function manager()
+    {
+        return $this->belongsTo(Manager::class);
+    }
 }
