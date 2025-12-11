@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\ApplicationStep;
 use Illuminate\Http\Request;
 
 class ApplicationStepController extends Controller
@@ -12,7 +13,7 @@ class ApplicationStepController extends Controller
      */
     public function index()
     {
-        //
+        return ApplicationStep::all();
     }
 
     /**
@@ -20,7 +21,7 @@ class ApplicationStepController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        return ApplicationStep::create($request->all());
     }
 
     /**
@@ -28,7 +29,7 @@ class ApplicationStepController extends Controller
      */
     public function show(string $id)
     {
-        //
+        return ApplicationStep::findOrFail($id);
     }
 
     /**
@@ -36,7 +37,9 @@ class ApplicationStepController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $step = ApplicationStep::findOrFail($id);
+        $step->update($request->all());
+        return $step;
     }
 
     /**
@@ -44,6 +47,6 @@ class ApplicationStepController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        return ApplicationStep::destroy($id);
     }
 }

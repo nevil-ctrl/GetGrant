@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\UserDocument;
 use Illuminate\Http\Request;
 
 class UserDocumentController extends Controller
@@ -12,7 +13,7 @@ class UserDocumentController extends Controller
      */
     public function index()
     {
-        //
+        return UserDocument::with(['user', 'document'])->get();
     }
 
     /**
@@ -20,7 +21,7 @@ class UserDocumentController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        return UserDocument::create($request->all());
     }
 
     /**
@@ -28,7 +29,7 @@ class UserDocumentController extends Controller
      */
     public function show(string $id)
     {
-        //
+        return UserDocument::with(['user', 'document'])->findOrFail($id);
     }
 
     /**
@@ -36,7 +37,9 @@ class UserDocumentController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $doc = UserDocument::findOrFail($id);
+        $doc->update($request->all());
+        return $doc;
     }
 
     /**
@@ -44,6 +47,6 @@ class UserDocumentController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        return UserDocument::destroy($id);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Document;
 use Illuminate\Http\Request;
 
 class DocumentController extends Controller
@@ -12,7 +13,7 @@ class DocumentController extends Controller
      */
     public function index()
     {
-        //
+        return Document::all();
     }
 
     /**
@@ -20,7 +21,7 @@ class DocumentController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        
     }
 
     /**
@@ -28,7 +29,7 @@ class DocumentController extends Controller
      */
     public function show(string $id)
     {
-        //
+        return Document::findOrFail($id);
     }
 
     /**
@@ -36,7 +37,8 @@ class DocumentController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $document = Document::findOrFail($id);
+        $document->update($request->all());
     }
 
     /**
@@ -44,6 +46,6 @@ class DocumentController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        return Document::destroy($id);
     }
 }

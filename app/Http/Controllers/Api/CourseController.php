@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Course;
 use Illuminate\Http\Request;
 
 class CourseController extends Controller
@@ -12,7 +13,7 @@ class CourseController extends Controller
      */
     public function index()
     {
-        //
+        return Course::with(['lessons'])->get();
     }
 
     /**
@@ -20,7 +21,7 @@ class CourseController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        return Course::create($request->all());
     }
 
     /**
@@ -28,7 +29,7 @@ class CourseController extends Controller
      */
     public function show(string $id)
     {
-        //
+        return Course::with(['lessons'])->findOrFail($id);
     }
 
     /**
@@ -36,7 +37,9 @@ class CourseController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $course = Course::findOrFail($id);
+        $course->update($request->all());
+
     }
 
     /**
@@ -44,6 +47,6 @@ class CourseController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        return Course::destroy($id);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Lesson;
 use Illuminate\Http\Request;
 
 class LessonController extends Controller
@@ -12,7 +13,7 @@ class LessonController extends Controller
      */
     public function index()
     {
-        //
+        return Lesson::with('course')->get();
     }
 
     /**
@@ -20,7 +21,7 @@ class LessonController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        return Lesson::create($request->all());
     }
 
     /**
@@ -28,7 +29,7 @@ class LessonController extends Controller
      */
     public function show(string $id)
     {
-        //
+        return Lesson::with('course')->findOrFail($id);
     }
 
     /**
@@ -36,7 +37,10 @@ class LessonController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $lesson = Lesson::findOrFail($id);
+        $lesson ->update($request->all());
+        return $lesson;
+
     }
 
     /**
@@ -44,6 +48,6 @@ class LessonController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        return Lesson::destroy($id);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Lead;
 use Illuminate\Http\Request;
 
 class LeadController extends Controller
@@ -12,7 +13,7 @@ class LeadController extends Controller
      */
     public function index()
     {
-        //
+        return Lead::all();
     }
 
     /**
@@ -20,7 +21,7 @@ class LeadController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        return Lead::create($request->all());
     }
 
     /**
@@ -28,15 +29,7 @@ class LeadController extends Controller
      */
     public function show(string $id)
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
+        return Lead::findOrFail($id);
     }
 
     /**
@@ -44,6 +37,6 @@ class LeadController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        return Lead::destroy($id);
     }
 }
