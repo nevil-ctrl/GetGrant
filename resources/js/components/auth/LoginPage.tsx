@@ -19,8 +19,12 @@ export function LoginPage({ onSwitchToRegister, onNavigate, onCloseSideNav }: { 
       onNavigate?.('/dashboard');
       onCloseSideNav?.();
     } catch (e: any) {
-      setError('Не удалось войти. Проверьте данные и попробуйте снова.');
-      console.error(e);
+      const message =
+        e?.response?.data?.message ||
+        e?.response?.data?.errors?.email?.[0] ||
+        'Не удалось войти. Проверьте данные и попробуйте снова.';
+      setError(message);
+      console.error('Login error', e);
     } finally {
       setSubmitting(false);
     }

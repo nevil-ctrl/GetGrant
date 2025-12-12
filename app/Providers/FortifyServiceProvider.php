@@ -43,9 +43,9 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Views
-        Fortify::loginView(fn() => view('auth.login'));
-        Fortify::registerView(fn() => view('auth.register'));
+        // Views (отключены, основная аутентификация в React + Sanctum)
+        // Fortify::loginView(fn() => view('auth.login'));
+        // Fortify::registerView(fn() => view('auth.register'));
         Fortify::requestPasswordResetLinkView(fn() => view('auth.forgot-password'));
         Fortify::resetPasswordView(fn($request) => view('auth.reset-password', ['request' => $request]));
         Fortify::verifyEmailView(fn() => view('auth.verify-email'));

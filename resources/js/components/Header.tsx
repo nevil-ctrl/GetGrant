@@ -18,6 +18,7 @@ export function Header({ isAuthenticated = false, onNavigate }: HeaderProps) {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const isUserAuthenticated = isAuthenticated || !!user;
+  const isAdmin = !!user && user.role === 'admin';
 
   const handleNavigate = (path: string) => {
     if (onNavigate) {
@@ -104,6 +105,11 @@ export function Header({ isAuthenticated = false, onNavigate }: HeaderProps) {
               </>
             ) : (
               <>
+                {isAdmin && (
+                  <GetGrantButton variant="ghost" size="sm" onClick={() => handleNavigate('/admin')}>
+                    Админка
+                  </GetGrantButton>
+                )}
                 <button
                   onClick={handleProfileClick}
                   className="flex items-center gap-2 p-2 hover:bg-[#F5F5F5] rounded-lg transition-colors"
@@ -134,6 +140,11 @@ export function Header({ isAuthenticated = false, onNavigate }: HeaderProps) {
               </>
             ) : (
               <>
+                {isAdmin && (
+                  <GetGrantButton variant="ghost" size="sm" onClick={() => handleNavigate('/admin')}>
+                    Админка
+                  </GetGrantButton>
+                )}
                 <GetGrantButton variant="ghost" size="sm" onClick={handleProfileClick}>
                   Профиль
                 </GetGrantButton>

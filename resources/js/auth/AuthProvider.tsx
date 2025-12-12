@@ -1,122 +1,75 @@
-import React, { useState, useEffect } from "react";
-import {
-    AuthContext,
-    LoginCredentials,
-    RegisterData,
-} from "@/context/AuthContext";
+import React, { useState, useEffect, createContext, useContext } from "react";
 import axios from "axios";
 
-interface Props {
-    children: React.ReactNode;
+interface LoginCredentials {
+    email: string;
+    password: string;
+    remember?: boolean;
 }
+
+interface RegisterData extends LoginCredentials {
+    name: string;
+    password_confirmation: string;
+    profile_type: 'student' | 'parent';
+}
+
+interface AuthContextType {
+    user: any | null;
+    loading: boolean;
+    login: (data: LoginCredentials) => Promise<void>;
+    register: (data: RegisterData) => Promise<void>;
+    logout: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
 const authHttp = axios.create({
     baseURL: "/",
-    headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-    },
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
     withCredentials: true,
 });
 
-authHttp.interceptors.request.use((config) => {
-    const token = document
-        .querySelector('meta[name="csrf-token"]')
-        ?.getAttribute("content");
-    if (token) {
-        config.headers["X-CSRF-TOKEN"] = token;
-    }
-
-    // Получаем XSRF токен из cookie для Fortify
-    const xsrfToken = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("XSRF-TOKEN="))
-        ?.split("=")[1];
-
-    if (xsrfToken) {
-        config.headers["X-XSRF-TOKEN"] = decodeURIComponent(xsrfToken);
-    }
-
-    return config;
-});
-
-export const AuthProvider: React.FC<Props> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<any | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Проверяем, был ли это редирект после выхода
-        const urlParams = new URLSearchParams(window.location.search);
-        const isLogout = urlParams.has('logout');
-        const hasNocache = urlParams.has('nocache');
-
-        // Если есть параметр logout или nocache (старый способ), значит был выход
-        if (isLogout || hasNocache) {
-            // После выхода сразу устанавливаем user как null
-            setUser(null);
-            setLoading(false);
-            // Очищаем параметры из URL
-            window.history.replaceState({}, '', '/');
-            return;
-        }
-
-        // ВСЕГДА получаем пользователя через API, игнорируем window.user
-        authHttp
-            .get("/api/user")
-            .then((res) => {
-                // Проверяем, что ответ не пустой (может быть null или пустой объект)
-                if (res.data && Object.keys(res.data).length > 0) {
-                    setUser(res.data);
-                } else {
-                    setUser(null);
-                }
-            })
-            .catch(() => setUser(null))
-            .finally(() => setLoading(false));
+        authHttp.get("/sanctum/csrf-cookie").then(() => {
+            authHttp.get("/api/auth/me")
+                .then(res => setUser(res.data))
+                .catch(() => setUser(null))
+                .finally(() => setLoading(false));
+        });
     }, []);
 
     const login = async (credentials: LoginCredentials) => {
         await authHttp.get("/sanctum/csrf-cookie");
-        await authHttp.post("/login", credentials);
-        const userRes = await authHttp.get("/api/user");
+        await authHttp.post("/api/auth/login", credentials);
+        const userRes = await authHttp.get("/api/auth/me");
         setUser(userRes.data);
     };
 
     const register = async (data: RegisterData) => {
         await authHttp.get("/sanctum/csrf-cookie");
-        await authHttp.post("/register", data);
-        const userRes = await authHttp.get("/api/user");
+        await authHttp.post("/api/auth/register", data);
+        const userRes = await authHttp.get("/api/auth/me");
         setUser(userRes.data);
     };
 
     const logout = async () => {
         try {
-            // Отправляем logout
-            await authHttp.post("/api/logout", {});
-
-            // Очищаем React state
+            await authHttp.post("/api/auth/logout");
+        } finally {
             setUser(null);
-
-            // Очищаем localStorage и sessionStorage (на всякий случай)
-            localStorage.clear();
-            sessionStorage.clear();
-
-            // Принудительная перезагрузка с очисткой кеша
-            window.location.href = "/?nocache=" + Date.now();
-        } catch (error: any) {
-            console.error("Logout error:", error);
-            setUser(null);
-            localStorage.clear();
-            sessionStorage.clear();
             window.location.href = "/?nocache=" + Date.now();
         }
     };
 
     return (
-        <AuthContext.Provider
-            value={{ user, loading, login, register, logout }}
-        >
+        <AuthContext.Provider value={{ user, loading, login, register, logout }}>
             {children}
         </AuthContext.Provider>
     );
 };
+
+export const useAuth = () => useContext(AuthContext);

@@ -13,28 +13,58 @@ use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\UserDocumentController;
 use App\Http\Controllers\Api\LeadController;
 use App\Http\Controllers\Api\MessageController;
+use App\Http\Controllers\Api\AuthController;
 
-// Countries (only index + show)
+// Auth (Sanctum, React SPA)
+Route::prefix('auth')->group(function () {
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/me', [AuthController::class, 'me']);
+        Route::post('/logout', [AuthController::class, 'logout']);
+    });
+});
+
+// Countries (only index + show) - публичные
 Route::apiResource('countries', CountryController::class)->only(['index', 'show']);
 
-// Universities
-Route::apiResource('universities', UniversityController::class);
+// Universities - чтение публично, мутации требуют авторизации
+Route::apiResource('universities', UniversityController::class)->only(['index', 'show']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('universities', [UniversityController::class, 'store']);
+    Route::put('universities/{university}', [UniversityController::class, 'update']);
+    Route::delete('universities/{university}', [UniversityController::class, 'destroy']);
+});
 
-// Programs
-Route::apiResource('programs', ProgramController::class);
+// Programs - чтение публично, мутации требуют авторизации
+Route::apiResource('programs', ProgramController::class)->only(['index', 'show']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('programs', [ProgramController::class, 'store']);
+    Route::put('programs/{program}', [ProgramController::class, 'update']);
+    Route::delete('programs/{program}', [ProgramController::class, 'destroy']);
+});
 
-// Courses / Lessons
-Route::apiResource('courses', CourseController::class);
-Route::apiResource('lessons', LessonController::class);
+// Courses / Lessons - требуют авторизации
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('courses', CourseController::class);
+    Route::apiResource('lessons', LessonController::class);
+});
 
-// Applications + steps
-Route::apiResource('applications', ApplicationController::class);
-Route::apiResource('application-steps', ApplicationStepController::class);
+// Applications + steps - требуют авторизации (только свои)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('applications', ApplicationController::class);
+    Route::apiResource('application-steps', ApplicationStepController::class);
+});
 
-// Documents system
-Route::apiResource('documents', DocumentController::class);
-Route::apiResource('user-documents', UserDocumentController::class);
+// Documents system - требуют авторизации
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('documents', DocumentController::class);
+    Route::apiResource('user-documents', UserDocumentController::class);
+});
 
-// CRM: Leads + Messages
-Route::apiResource('leads', LeadController::class);
-Route::apiResource('messages', MessageController::class);
+// CRM: Leads + Messages - требуют авторизации
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('leads', LeadController::class);
+    Route::apiResource('messages', MessageController::class);
+});

@@ -26,8 +26,14 @@ export function RegisterPage({ onSwitchToLogin, onNavigate, onCloseSideNav }: { 
       onNavigate?.('/dashboard');
       onCloseSideNav?.();
     } catch (e: any) {
-      setError('Не удалось зарегистрироваться. Проверьте данные и попробуйте снова.');
-      console.error(e);
+      const errors = e?.response?.data?.errors;
+      const firstError =
+        errors?.email?.[0] ||
+        errors?.password?.[0] ||
+        errors?.name?.[0] ||
+        e?.response?.data?.message;
+      setError(firstError || 'Не удалось зарегистрироваться. Проверьте данные и попробуйте снова.');
+      console.error('Register error', e);
     } finally {
       setSubmitting(false);
     }
