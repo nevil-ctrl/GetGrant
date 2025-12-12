@@ -1,16 +1,23 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import "./bootstrap";
 import App from "./App";
-import { AuthProvider } from "./auth/AuthProvider";
+import "./bootstrap";
 import "../css/app.css";
 
-const root = ReactDOM.createRoot(document.getElementById("root")!);
+console.log("🚀 main.tsx loading...");
+
+const rootElement = document.getElementById("root");
+
+if (!rootElement) {
+    throw new Error("Root element not found");
+}
+
+const root = ReactDOM.createRoot(rootElement);
 
 root.render(
     <React.StrictMode>
-        <AuthProvider>
-            <App />
-        </AuthProvider>
+        <App />
     </React.StrictMode>
 );
+
+console.log("✅ React app rendered");

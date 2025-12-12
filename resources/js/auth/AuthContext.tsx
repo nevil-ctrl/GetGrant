@@ -1,18 +1,30 @@
 import { createContext } from "react";
+import { User } from "./User";
 
-type LoginCredentials = {
+export interface LoginCredentials {
     email: string;
     password: string;
-};
+    remember?: boolean;
+}
 
-export const AuthContext = createContext<{
-    user: any;
+export interface RegisterData {
+    name: string;
+    email: string;
+    password: string;
+    password_confirmation: string;
+    phone?: string;
+    profile_type?: "student" | "parent";
+    manager_id?: number | null;
+}
+
+export interface AuthContextType {
+    user: User | null;
     loading: boolean;
-    login: (credentials: LoginCredentials) => Promise<void>;
+    login: (data: LoginCredentials) => Promise<void>;
+    register: (data: RegisterData) => Promise<void>;
     logout: () => Promise<void>;
-}>({
-    user: null,
-    loading: true,
-    login: async () => {},
-    logout: async () => {},
-});
+}
+
+export const AuthContext = createContext<AuthContextType | undefined>(
+    undefined
+);

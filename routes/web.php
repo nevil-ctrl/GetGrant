@@ -70,8 +70,19 @@ Route::middleware(['web', 'auth', 'verified'])->group(function () {
     Route::get('/admin-dashboard', fn() => view('dashboards.admin'))
         ->middleware([CheckRole::class . ':admin'])->name('admin.dashboard');
 });
+// Чтобы Authenticate middleware не падал
+// SPA React
+Route::get('/{any}', fn() => view('index'))
+    ->where('any', '^(?!api|dashboard|auth).*$');
 
-// -------------------------------
+// Named route для auth middleware
+Route::get('/auth/login', fn() => view('index'))->name('login');
+Route::get('/auth/register', fn() => view('index'));
+
+// Дашборд с auth middleware
+Route::middleware(['web', 'auth:sanctum'])->group(function () {
+    Route::get('/dashboard', fn() => view('index'));
+});
 // Редирект /home → /dashboard
 // -------------------------------
 Route::redirect('/home', '/dashboard');

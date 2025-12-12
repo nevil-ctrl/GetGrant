@@ -1,195 +1,206 @@
-import React, { useState } from 'react';
-import { GetGrantButton } from '../GetGrantButton';
-import { GetGrantInput } from '../GetGrantInput';
-import { User, GraduationCap, Mail, Phone, Lock } from 'lucide-react';
-import { motion } from 'motion/react';
-import { useAuth } from '@/auth/useAuth';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { GetGrantButton } from "../GetGrantButton";
+import { GetGrantInput } from "../GetGrantInput";
+import { Mail, Lock, User, Phone } from "lucide-react";
+import { motion } from "motion/react";
+import { useAuth } from "@/auth/useAuth";
 
-export function RegisterPage({ onSwitchToLogin, onNavigate, onCloseSideNav }: { onSwitchToLogin: () => void; onNavigate?: (page: string) => void; onCloseSideNav?: () => void }) {
-  const { register } = useAuth();
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    password: '',
-    password_confirmation: '',
-    profile_type: 'student' as 'student' | 'parent',
-  });
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+interface RegisterPageProps {
+    onSwitchToLogin: () => void;
+    onNavigate?: (page: string) => void;
+    onCloseSideNav?: () => void;
+}
 
-  const handleSubmit = async () => {
-    try {
-      setSubmitting(true);
-      setError(null);
-      await register(formData);
-      onNavigate?.('/dashboard');
-      onCloseSideNav?.();
-    } catch (e: any) {
-      const errors = e?.response?.data?.errors;
-      const firstError =
-        errors?.email?.[0] ||
-        errors?.password?.[0] ||
-        errors?.name?.[0] ||
-        e?.response?.data?.message;
-      setError(firstError || 'Не удалось зарегистрироваться. Проверьте данные и попробуйте снова.');
-      console.error('Register error', e);
-    } finally {
-      setSubmitting(false);
-    }
-  };
+export function RegisterPage({
+    onSwitchToLogin,
+    onNavigate,
+    onCloseSideNav,
+}: RegisterPageProps) {
+    const { register } = useAuth();
+    const navigate = useNavigate();
+    const [form, setForm] = useState({
+        name: "",
+        email: "",
+        password: "",
+        password_confirmation: "",
+        phone: "",
+        profile_type: "student" as "student" | "parent",
+    });
+    const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-white to-[#F5F5F5] flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md"
-      >
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          {/* Logo (click -> home) */}
-          <button
-            onClick={() => {
-              onNavigate?.('home');
-              onCloseSideNav?.();
-            }}
-            className="flex items-center justify-center gap-2 mb-8 focus:outline-none"
-            aria-label="Перейти на главную"
-          >
-            <div className="w-12 h-12 bg-[#1055b2] rounded-lg flex items-center justify-center">
-              <span className="text-[#1A1A1A] font-bold text-2xl">G</span>
-            </div>
-            <span className="text-2xl font-bold text-[#1A1A1A]">GetGrant</span>
-          </button>
+    const handleSubmit = async () => {
+        try {
+            setSubmitting(true);
+            setError(null);
 
-          <h2 className="text-2xl font-bold text-[#1A1A1A] text-center mb-2">
-            Регистрация
-          </h2>
-          <p className="text-[#6D7A89] text-center mb-4">
-            Создайте аккаунт для начала работы
-          </p>
+            await register(form);
 
-          {error && (
-            <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg p-3">
-              {error}
-            </div>
-          )}
+            console.log(
+                "✅ Registration successful, redirecting to dashboard..."
+            );
 
-          {/* Form Fields */}
-          <div className="space-y-4">
-            <GetGrantInput
-              label="Полное имя"
-              type="text"
-              placeholder="Иван Иванов"
-              icon={<User className="w-5 h-5" />}
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            />
+            navigate("/dashboard");
+            onCloseSideNav?.();
+        } catch (e: any) {
+            console.error("❌ Registration error:", e);
+            setError(e?.response?.data?.message || "Ошибка регистрации.");
+        } finally {
+            setSubmitting(false);
+        }
+    };
 
-            <GetGrantInput
-              label="Email"
-              type="email"
-              placeholder="email@example.com"
-              icon={<Mail className="w-5 h-5" />}
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            />
-
-            <GetGrantInput
-              label="Телефон"
-              type="tel"
-              placeholder="+7 (999) 123-45-67"
-              icon={<Phone className="w-5 h-5" />}
-              value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-            />
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-[#1A1A1A]">Тип профиля</label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setFormData({ ...formData, profile_type: 'student' })}
-                  className={`p-4 rounded-lg border-2 text-left transition-all ${
-                    formData.profile_type === 'student'
-                      ? 'border-[#1055b2] bg-[#1055b2]/10'
-                      : 'border-[#1A1A1A]/10 hover:border-[#1055b2]/50'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-[#1055b2] rounded-lg flex items-center justify-center">
-                      <GraduationCap className="w-5 h-5 text-[#1A1A1A]" />
-                    </div>
-                    <div>
-                      <div className="font-semibold text-[#1A1A1A]">Студент</div>
-                      <div className="text-xs text-[#6D7A89]">Поступаю в университет</div>
-                    </div>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFormData({ ...formData, profile_type: 'parent' })}
-                  className={`p-4 rounded-lg border-2 text-left transition-all ${
-                    formData.profile_type === 'parent'
-                      ? 'border-[#1055b2] bg-[#1055b2]/10'
-                      : 'border-[#1A1A1A]/10 hover:border-[#1055b2]/50'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-[#1055b2] rounded-lg flex items-center justify-center">
-                      <User className="w-5 h-5 text-[#1A1A1A]" />
-                    </div>
-                    <div>
-                      <div className="font-semibold text-[#1A1A1A]">Родитель</div>
-                      <div className="text-xs text-[#6D7A89]">Помогаю ребёнку поступать</div>
-                    </div>
-                  </div>
-                </button>
-              </div>
-            </div>
-
-            <GetGrantInput
-              label="Пароль"
-              type="password"
-              placeholder="Минимум 8 символов"
-              icon={<Lock className="w-5 h-5" />}
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-            />
-
-            <GetGrantInput
-              label="Подтверждение пароля"
-              type="password"
-              placeholder="Повторите пароль"
-              icon={<Lock className="w-5 h-5" />}
-              value={formData.password_confirmation}
-              onChange={(e) => setFormData({ ...formData, password_confirmation: e.target.value })}
-            />
-          </div>
-
-          {/* Register Button */}
-          <GetGrantButton
-            variant="primary"
-            size="lg"
-            className="w-full mt-6"
-            onClick={handleSubmit}
-            disabled={submitting}
-          >
-            {submitting ? 'Создаём аккаунт...' : 'Зарегистрироваться'}
-          </GetGrantButton>
-
-          {/* Login Link */}
-          <p className="text-center text-sm text-[#6D7A89] mt-6">
-            Уже есть аккаунт?{' '}
-            <button
-              onClick={onSwitchToLogin}
-              className="text-[#1A1A1A] font-medium hover:underline"
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-white to-[#F5F5F5] flex items-center justify-center p-4">
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="w-full max-w-md"
             >
-              Войти
-            </button>
-          </p>
+                <div className="bg-white rounded-2xl shadow-xl p-8">
+                    <h2 className="text-2xl font-bold text-center mb-2">
+                        Регистрация
+                    </h2>
+                    <p className="text-sm text-center text-[#6D7A89] mb-6">
+                        Создайте аккаунт для доступа ко всем возможностям
+                    </p>
+
+                    {error && (
+                        <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg p-3">
+                            {error}
+                        </div>
+                    )}
+
+                    <div className="space-y-4">
+                        <GetGrantInput
+                            label="Имя"
+                            type="text"
+                            icon={<User />}
+                            value={form.name}
+                            onChange={(e) =>
+                                setForm({ ...form, name: e.target.value })
+                            }
+                        />
+
+                        <GetGrantInput
+                            label="Email"
+                            type="email"
+                            icon={<Mail />}
+                            value={form.email}
+                            onChange={(e) =>
+                                setForm({ ...form, email: e.target.value })
+                            }
+                        />
+
+                        <GetGrantInput
+                            label="Телефон (необязательно)"
+                            type="tel"
+                            icon={<Phone />}
+                            placeholder="+7 (999) 123-45-67"
+                            value={form.phone}
+                            onChange={(e) =>
+                                setForm({ ...form, phone: e.target.value })
+                            }
+                        />
+
+                        {/* Выбор роли */}
+                        <div>
+                            <label className="block text-sm font-medium text-[#1A1A1A] mb-2">
+                                Кто вы?
+                            </label>
+                            <div className="grid grid-cols-2 gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setForm({
+                                            ...form,
+                                            profile_type: "student",
+                                        })
+                                    }
+                                    className={`p-4 rounded-lg border-2 transition-all ${
+                                        form.profile_type === "student"
+                                            ? "border-[#1055b2] bg-[#1055b2]/5"
+                                            : "border-[#1A1A1A]/10 hover:border-[#1A1A1A]/20"
+                                    }`}
+                                >
+                                    <div className="text-center">
+                                        <div className="text-2xl mb-1">🎓</div>
+                                        <div className="text-sm font-medium text-[#1A1A1A]">
+                                            Студент
+                                        </div>
+                                    </div>
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setForm({
+                                            ...form,
+                                            profile_type: "parent",
+                                        })
+                                    }
+                                    className={`p-4 rounded-lg border-2 transition-all ${
+                                        form.profile_type === "parent"
+                                            ? "border-[#1055b2] bg-[#1055b2]/5"
+                                            : "border-[#1A1A1A]/10 hover:border-[#1A1A1A]/20"
+                                    }`}
+                                >
+                                    <div className="text-center">
+                                        <div className="text-2xl mb-1">👨‍👩‍👧</div>
+                                        <div className="text-sm font-medium text-[#1A1A1A]">
+                                            Родитель
+                                        </div>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+
+                        <GetGrantInput
+                            label="Пароль"
+                            type="password"
+                            icon={<Lock />}
+                            value={form.password}
+                            onChange={(e) =>
+                                setForm({ ...form, password: e.target.value })
+                            }
+                        />
+
+                        <GetGrantInput
+                            label="Подтвердите пароль"
+                            type="password"
+                            icon={<Lock />}
+                            value={form.password_confirmation}
+                            onChange={(e) =>
+                                setForm({
+                                    ...form,
+                                    password_confirmation: e.target.value,
+                                })
+                            }
+                        />
+                    </div>
+
+                    <GetGrantButton
+                        variant="primary"
+                        size="lg"
+                        className="w-full mt-6"
+                        onClick={handleSubmit}
+                        disabled={submitting}
+                    >
+                        {submitting ? "Регистрируем..." : "Зарегистрироваться"}
+                    </GetGrantButton>
+
+                    <p className="text-center text-sm mt-6">
+                        Уже есть аккаунт?{" "}
+                        <button
+                            onClick={onSwitchToLogin}
+                            className="text-[#1055b2] hover:underline font-medium"
+                        >
+                            Войти
+                        </button>
+                    </p>
+                </div>
+            </motion.div>
         </div>
-      </motion.div>
-    </div>
-  );
+    );
 }
