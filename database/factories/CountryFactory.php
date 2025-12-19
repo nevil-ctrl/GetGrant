@@ -10,10 +10,11 @@ class CountryFactory extends Factory
 
     public function definition(): array
     {
+        $code = strtolower($this->faker->unique()->lexify('??'));
         return [
             'name' => $this->faker->country(),
-            'code' => strtoupper($this->faker->unique()->lexify('??')), // например "US", "UK"
-            'flag' => 'https://flagcdn.com/' . strtolower($this->faker->unique()->lexify('??')) . '.svg',
+            'code' => strtoupper($code),
+            'flag' => 'https://countryflagsapi.com/png/' . $code,
             'description' => $this->faker->paragraph(),
             'selling_points' => json_encode([
                 $this->faker->sentence(),
